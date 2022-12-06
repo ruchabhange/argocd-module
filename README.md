@@ -35,7 +35,7 @@ Total number of days: 1.5 days
 - [03-ArgCD Sync Phases, Waves and Sync Windows](#03-argcd-sync-phases-waves-and-sync-windows)
     - [Sync Phases and Waves](#a-sync-phases-and-waves) 
     - [Sync Windows](#b-sync-windows)
-- [04-ArgoCD Diffing customizations, Notifications](#04-argocd-diffing-customizations-notifications-and-sync-windows)
+- [04-ArgoCD Diffing customizations and Notifications](#04-argocd-diffing-customizations-and-notifications)
    - [Diffing Customization](#a-diffing-customization) 
 - [05-ArgoCD Disaster Recovery.]()
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
@@ -215,7 +215,7 @@ spec:
 > No, because there would no active allow window at any time expect 8PM-10PM, but we have an active deny window during the same time 8PM-10PM that means we would not be able to sync any application at any time.```
 </details>
 
-## 04-ArgoCD Diffing Customizations, Notifications and Sync Windows
+## 04-ArgoCD Diffing Customizations and Notifications
 ### a) Diffing Customization
 The diffing customization feature allows users to configure how ArgoCD behaves during the diff stage which is the step that verifies if an Application is synced or not. Argo CD allows you to optionally ignore differences of problematic resources. The diffing customization can be configured for single or multiple application resources or at a system level.
 - [Read][Diffing Customization](https://argo-cd.readthedocs.io/en/stable/user-guide/diffing/)
@@ -223,7 +223,7 @@ The diffing customization feature allows users to configure how ArgoCD behaves d
 - [Read][System Level Confgiguration](https://argo-cd.readthedocs.io/en/stable/user-guide/diffing/#system-level-configuration)
 
 ##### Assignmetn 
-:computer: Use this sample k8s application [repo](https://github.com/shehbaz-pathan/simple-microservices-app/tree/master/manifests) deploy this application using ArgoCD and later configure the diffing customization to ingoner the count of replicas for web-frontend deployment.
+:computer: Use this sample k8s application [repo](https://github.com/shehbaz-pathan/simple-microservices-app/tree/master/manifests) and deploy this application using ArgoCD and later configure the diffing customization to ingoner the count of replicas for web-frontend deployment.
 <details>
 <summary>Answer</summary></br>
 
@@ -261,4 +261,51 @@ spec:
 ```
 - Now change the replica count of web-frontend deployment to 2 and and check this time application sync status would not show OutOfSync because we are ignoring changes of web-frontend deployment for replica count
 </details>
-    
+
+## b) Notifications
+Argo CD Notifications continuously monitors Argo CD applications and provides a flexible way to notify users about important changes in the application state. Using a flexible mechanism of triggers and templates you can configure when the notification should be sent as well as notification content
+- [Read][Notifications](https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/)
+
+##### Assignment
+:computer: Use this sample k8s application [repo](https://github.com/shehbaz-pathan/simple-microservices-app/tree/master/manifests) and deploy this application using ArgoCD with notification configuration for this app.
+
+<details>
+<summary>Answer</summary></br>
+
+- Follow [this](https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/services/slack/) guide to setup slack write bot and notification channel
+- Deploy the ArgoCD app manifest will look like this with notification configuration
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: customers
+  namespace: default
+  annotations:
+     notifications.argoproj.io/subscriptions: |
+     - trigger: [on-sync-failed, on-sync-running, on-sync-succeeded]
+        destinations:
+          - service: slack
+            recipients: [argocd-notifications-test]        
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/shehbaz-pathan/argocd-examples.git'
+    path: customer-details
+    targetRevision: HEAD
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+  syncPolicy:
+    syncOptions:
+     - RespectIgnoreDifferences=true
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      name: web-frontend
+      namespace: default
+      jqPathExpressions:
+        - .spec.replicas
+```
+once you first deploy above app after required slack related config you should get notifications like below
+![Folder](./argocd-notify.png)
+</details>
