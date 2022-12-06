@@ -34,3 +34,96 @@ Total number of days: 1.5 days
 - [04-ArgoCD Diff customizations, Notifications and Sync Windows]()
 - [05-ArgoCD Disaster Recovery.]()
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
+
+## 07-Argocd with Kustomize (60 minutes)
+
+Kustomize traverses a Kubernetes manifest to add, remove or update configuration options without forking. It is available both as a standalone binary and as a native feature of kubectl (and by extension oc)
+- [Read][Kustomize](https://kubectl.docs.kubernetes.io/guides/introduction/kustomize/)
+- [Read][kustomize-argocd](https://argo-cd.readthedocs.io/en/latest/user-guide/kustomize/)
+
+##### Kustomized Application:</br>
+
+Argo CD has native support for Kustomize. You can use this to avoid duplicating YAML for each deployment. This is especially good to use if you have different environments or clusters you’re deploying to.
+
+
+##### Hands-on activity (30 minutes)</br>
+:computer: This is sample k8s application [repo](https://github.com/shehbaz-pathan/simple-microservices-app/tree/master/manifests) we have integrate with kustomize template with 2 enviornment and deploy the application to argocd with env changes as:
+```
+Test : replica count for customer-2 and web-frontend-3, nameSuffix-test, commonLabels: purpose-Argocd-demo , env-test
+Prod : replica count for customer-3 and web-frontend-4 , nameprifix-prod, commonLabels: purpose-Argocd-demo , env-prod
+```
+<details>
+<summary>Answer</summary></br>
+ Pre-Requsite:
+ 
+1 kustomization installed 
+
+2 use concept of an "overlay", where you have a "base" set of manifests and you overlay your kustomizations for test and stage enviornment.
+
+Step1: Make 2 directory base with apllication manifest and kustomization.yaml for base application to pick up the k8 manifest as:
+dir: base/kustomization.yaml
+
+```yaml
+kind: Kustomization
+resources:
+  - web-frontend.yaml
+  - customers.yaml 
+commonLabels:
+  purpose: Argocd-demo
+ 
+  ```
+
+Step2: For test enviornment kustomization template with required enviornment dir overlays/test/kustomization.yaml
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../../base
+
+commonLabels:
+  purpose: Argocd-demo
+  env : test
+
+nameSuffix: -test
+
+replicas:
+  - name: web-frontend
+    count: 2
+  - name: customers-v2
+    count: 3
+
+  ```
+
+Test the test enviornment is working properly by kustomization build and apply to cluster command: `kustomize build | kubectl apply -f -` from directory 
+`/overlays/test/kustomization` with required configuration
+
+Step 3 : For Prod enviornment kustomization template with required enviornment dir overlays/prod/kustomization.yaml
+
+```yaml
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../../base
+
+commonLabels:
+  env : prod
+
+nameSuffix: -test
+
+replicas:
+  - name: web-frontend
+    count: 3
+  - name: customers-v2
+    count: 4
+  ```
+
+Test the prod enviornmenttemplate is working properly by kustomization build and apply to cluster command: `kustomize build | kubectl apply -f -` from directory `/overlays/prod/kustomization.yaml` with required configuration 
+
+</details>
+
+
+
+
