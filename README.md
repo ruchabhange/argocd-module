@@ -103,96 +103,51 @@ Within each phase you can have one or more waves, that allows you to ensure cert
 - [Read][Phase Configuration](https://argo-cd.readthedocs.io/en/stable/user-guide/sync-waves/#how-do-i-configure-phases)
 - [Read][Wave Configuration](https://argo-cd.readthedocs.io/en/stable/user-guide/sync-waves/#how-do-i-configure-waves)
 
-
-## 07-Argocd with Kustomize (60 minutes)
-
-Kustomize traverses a Kubernetes manifest to add, remove or update configuration options without forking. It is available both as a standalone binary and as a native feature of kubectl (and by extension oc)
-- [Read][Kustomize](https://kubectl.docs.kubernetes.io/guides/introduction/kustomize/)
-- [Read][kustomize-argocd](https://argo-cd.readthedocs.io/en/latest/user-guide/kustomize/)
-
-##### Kustomized Application:</br>
-
-Argo CD has native support for Kustomize. You can use this to avoid duplicating YAML for each deployment. This is especially good to use if you have different environments or clusters you’re deploying to.
-
-
-##### Hands-on activity (30 minutes)</br>
-:computer: This is sample k8s application [repo](https://github.com/shehbaz-pathan/simple-microservices-app/tree/master/manifests) we have integrate with kustomize template with 2 enviornment and deploy the application to argocd with env changes as:
-```
-Test : replica count for customer-2 and web-frontend-3, nameSuffix-test, commonLabels: purpose-Argocd-demo , env-test
-Prod : replica count for customer-3 and web-frontend-4 , nameprifix-prod, commonLabels: purpose-Argocd-demo , env-prod
-```
+##### Assignment
+:computer: This is sample k8s application [repo](https://github.com/shehbaz-pathan/simple-microservices-app/tree/master/manifests) deploy this application using ArgoCD and create post-sync hooks to verify we are getting http status code 200 from both ```web-frontend``` and ```customers``` service.
+Note: use sync waves to run hook for customers service before the web-frontend service
 <details>
 <summary>Answer</summary></br>
- Pre-Requsite:
- 
-1 kustomization installed 
-
-2 use concept of an "overlay", where you have a "base" set of manifests and you overlay your kustomizations for test and stage enviornment.
-
-Step1: Make 2 directory base with apllication manifest and kustomization.yaml for base application to pick up the k8 manifest as:
-dir: base/kustomization.yaml
+create a post-sync hook for customers service
 
 ```yaml
-kind: Kustomization
-resources:
-  - web-frontend.yaml
-  - customers.yaml 
-commonLabels:
-  purpose: Argocd-demo
- 
-  ```
-
-Step2: For test enviornment kustomization template with required enviornment dir overlays/test/kustomization.yaml
-
+apiVersion: batch/v1
+kind: Job
+metadata:
+   name: customers-status
+   annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+   backoffLimit: 3
+   template:
+     spec:
+       restartPolicy: OnFailure
+       containers:
+          - name: customers-status-checker
+            image: curlimages/curl
+            command: ["/bin/sh","-c","[[ $(curl http://customers/ -s -o /dev/null -w \"%{http_code}\") -eq 200 ]] && exit 0 || exit 1"]
+```
+create post-sync hook for web-frontend service
 ```yaml
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-bases:
-  - ../../base
-
-commonLabels:
-  purpose: Argocd-demo
-  env : test
-
-nameSuffix: -test
-
-replicas:
-  - name: web-frontend
-    count: 2
-  - name: customers-v2
-    count: 3
-
-  ```
-
-Test the test enviornment is working properly by kustomization build and apply to cluster command: `kustomize build | kubectl apply -f -` from directory 
-`/overlays/test/kustomization` with required configuration
-
-Step 3 : For Prod enviornment kustomization template with required enviornment dir overlays/prod/kustomization.yaml
-
-```yaml
-apiVersion: kustomize.config.k8s.io/v1beta1
-kind: Kustomization
-
-bases:
-  - ../../base
-
-commonLabels:
-  env : prod
-
-nameSuffix: -test
-
-replicas:
-  - name: web-frontend
-    count: 3
-  - name: customers-v2
-    count: 4
-  ```
-
-Test the prod enviornmenttemplate is working properly by kustomization build and apply to cluster command: `kustomize build | kubectl apply -f -` from directory `/overlays/prod/kustomization.yaml` with required configuration 
-
+apiVersion: batch/v1
+kind: Job
+metadata:
+   name: web-front-status
+   annotations:
+    argocd.argoproj.io/hook: PostSync
+    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/hook-delete-policy: BeforeHookCreation
+spec:
+   backoffLimit: 3
+   template:
+     spec:
+       restartPolicy: OnFailure
+       containers:
+          - name: customers-status-checker
+            image: curlimages/curl
+            command: ["/bin/sh","-c","[[ $(curl http://web-frontend/ -s -o /dev/null -w \"%{http_code}\") -eq 200 ]] && exit 0 || exit 1"]
+```
+as mentioned above we used sync wave 1 for customers service and wave 2 for web-frontend in this order hook for customers service will get executed before web-frontend
 </details>
-
-
-
-
