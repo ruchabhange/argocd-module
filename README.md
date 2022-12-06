@@ -23,7 +23,7 @@ Total number of days: 1.5 days
 - [09-Understanding Application sets]()
 - [10-Assignment on AppicationSets]()
 - [11-Using Bitnami sealed secrets for storing secrets on git repos securely]()
-- [12-ArgoCD integration with external secret operator]()
+- [12-ArgoCD integration With External Secrets Operator](#12-argocd-integration-with-external-secrets-operator)
 - [13-ArgoCD with HC Vault and Bitnami sealed secrets]()
 - [14-end-to-end CI/CD pipeline using Jenkins(CI) and ArgoCD(CD)]()
 
