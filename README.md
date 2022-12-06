@@ -268,7 +268,7 @@ Argo CD Notifications continuously monitors Argo CD applications and provides a 
 - [Read][Notifications](https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/)
 
 ##### Assignment
-:computer: Use this sample k8s application [repo](https://github.com/shehbaz-pathan/simple-microservices-app/tree/master/manifests) and deploy this application using ArgoCD with notification configuration for this app.
+:computer: Use this sample k8s application [repo](https://github.com/shehbaz-pathan/simple-microservices-app/tree/master/manifests) and deploy this application using ArgoCD with notification configuration to sent notification on slack whenever sync is running, sync succeeded and sync failed for this app.
 
 <details>
 <summary>Answer</summary></br>
@@ -307,6 +307,6 @@ spec:
       jqPathExpressions:
         - .spec.replicas
 ```
-once you first deploy above app after required slack related config you should get notifications like below
+once you first deploy above app after required slack related config you should get notifications like below while sync is running and when sync is succeeded
 ![Folder](./argocd-notify.png)
 </details>
