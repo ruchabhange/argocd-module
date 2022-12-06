@@ -41,6 +41,82 @@ Total number of days: 1.5 days
 - [05-ArgoCD Disaster Recovery.]()
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
 
+# ArgoCD Level-01
+## 12-ArgoCD Integration With External Secrets Operator
+Secrets are the intgral part of modern day applications, secrets are used to store the store the sensitive data such as passwords, keys, APIs, tokens, and certificates, storing secrets on any vcs repository is not a good prctice. We can use external secrets operator with ArgoCD to store secrets required by application on any external secret managers like AWS Secret Manager, Google Secret Manager, HC Vault etc and pull them into the application without writing them down in any kubernetes manifests.
+
+- [Read][External Secrets Operator](https://external-secrets.io/v0.7.0-rc1/introduction/getting-started/)
+
+##### Assigment
+ Use this sample k8s application [repo](https://github.com/shehbaz-pathan/simple-microservices-app/tree/master/manifests) and deploy this application using ArgoCD, this app reads value for environment variable NAME from secret, store the value of this env variable in external secrets manager(AWS or Google) and pull that value using External Secrets Operator, integrate External Secrets Operator with ArgoCD.
+ <details>
+<summary>Answer</summary></br>
+In this solution we will use Google Secret Manager for storing secret
+
+- Follow [this](https://external-secrets.io/v0.7.0-rc1/provider/google-secrets-manager/) guide to use Google Secret Manager with External Secrets Operator
+Create SecretStore and ExternalSecret manifets and push them to the repo to deploy them using ArgoCD
+- Create secret store to connect with Google Secret Manger
+
+```yaml
+apiVersion: external-secrets.io/v1beta1
+kind: SecretStore
+metadata:
+  name: gcp-secret-store
+spec:
+  provider:
+      gcpsm:                                  
+        auth:
+          secretRef:
+            secretAccessKeySecretRef:
+              name: gcpsm-secret              
+              key: secret-access-credentials  
+        projectID: your-project-id
+```
+- Create external secret resource to pull secret value from GCP secrets
+
+```yaml
+apiVersion: external-secrets.io/v1alpha1
+kind: ExternalSecret
+metadata:
+  name: example
+spec:
+  refreshInterval: 10m
+  secretStoreRef:
+    kind: SecretStore
+    name: gcp-secret-store              
+  target:
+    name: web-secret
+    creationPolicy: Owner
+  dataFrom:
+    - key: web-secret
+```
+- Create the application 
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: customers
+  namespace: argocd    
+spec:
+  project: default
+  source:
+    repoURL: 'https://github.com/shehbaz-pathan/simple-microservices-app.git'
+    path: manifests/external-secrets-example/
+    targetRevision: HEAD
+  destination:
+    server: 'https://kubernetes.default.svc'
+    namespace: default
+```
+
+Google Secret:
+![Folder](./web-secret.png)
+
+Expected Result:
+![Folder](./web-frontend-name.png)
+
+</details>
+
+
 
 # ArgoCD Level-02
 ## 01-User Management(60 Minutes)
