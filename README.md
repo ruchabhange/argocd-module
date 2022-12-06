@@ -33,7 +33,7 @@ Total number of days: 1.5 days
     - [SSO](#b-sso40-minutes)
 - [02-ArgoCD with github actions for end-to-end CI/CD ]()
 - [03-ArgCD Sync Phases and Waves](#03-argcd-sync-phases-and-waves)
-- [04-ArgoCD Diffing customizations, Notifications and Sync Windows]()
+- [04-ArgoCD Diffing customizations, Notifications and Sync Windows](04-argoCD-diffing-customizations-notifications-and-sync-windows)
 - [05-ArgoCD Disaster Recovery.]()
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
 
