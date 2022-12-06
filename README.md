@@ -35,9 +35,8 @@ Total number of days: 1.5 days
 - [05-ArgoCD Disaster Recovery.](#disaster-recovery-60-minutes)
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
 
-<<<<<<< HEAD
 # ArgoCD Level-02
-## Disaster Recovery (40 Minutes)
+## 05-ArgoCD Disaster Recovery (40 Minutes)
 Argocd data are stored in the kubernetes custer one should consider taking backup of the argocd data regularly to avoid downtime and outages. Argocd configuration export can be done per individual application or by just exporting all of the applications to a YAML file.
 It is generally recommended to store the applications individually and within the same git repository that the Kubernetes objects are defined so that they will be under revision control and available in the event of a disaster.
 - [Read][Disaster-recovery](https://argo-cd.readthedocs.io/en/stable/operator-manual/disaster_recovery/#disaster-recovery)
@@ -63,7 +62,6 @@ argocd app create -f simple-app-backup.yaml
 ```
 </details>
 
-=======
 ## 07-Argocd with Kustomize (60 minutes)
 
 Kustomize traverses a Kubernetes manifest to add, remove or update configuration options without forking. It is available both as a standalone binary and as a native feature of kubectl (and by extension oc)
@@ -152,8 +150,3 @@ replicas:
 Test the prod enviornmenttemplate is working properly by kustomization build and apply to cluster command: `kustomize build | kubectl apply -f -` from directory `/overlays/prod/kustomization.yaml` with required configuration 
 
 </details>
-
-
-
-
->>>>>>> main
