@@ -39,7 +39,7 @@ Total number of days: 1.5 days
 
 
 # ArgoCD Level-02
-## User Management(60 Minutes)
+## 01-User Management(60 Minutes)
 ### a) Local Users/Accounts(20 Minutes)
 ArgoCD allows us to create to local users/accounts for authenticating and authorizing the different users and groups and restrict access to the ArgoCD and its resources. Argo CD does not have its own user management system and has only one built-in user admin. The admin user is a superuser and it has unrestricted access to the system. ArgoCD allows restrict access to ArgoCD resources using RBAC permissions.
 - [Read][Local Users/Accounts](https://argo-cd.readthedocs.io/en/stable/operator-manual/user-management/#local-usersaccounts-v15)
