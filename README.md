@@ -32,5 +32,33 @@ Total number of days: 1.5 days
 - [02-ArgoCD with github actions for end-to-end CI/CD ]()
 - [03-ArgCD Sync Waves and phases]()
 - [04-ArgoCD Diff customizations, Notifications and Sync Windows]()
-- [05-ArgoCD Disaster Recovery.]()
+- [05-ArgoCD Disaster Recovery.](#disaster-recovery-60-minutes)
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
+
+# ArgoCD Level-02
+## Disaster Recovery (40 Minutes)
+Argocd data are stored in the kubernetes custer one should consider taking backup of the argocd data regularly to avoid downtime and outages. Argocd configuration export can be done per individual application or by just exporting all of the applications to a YAML file.
+It is generally recommended to store the applications individually and within the same git repository that the Kubernetes objects are defined so that they will be under revision control and available in the event of a disaster.
+- [Read][Disaster-recovery](https://argo-cd.readthedocs.io/en/stable/operator-manual/disaster_recovery/#disaster-recovery)
+- [Read][Disaster Recovery workflow](https://argoproj.github.io/argo-workflows/disaster-recovery/#disaster-recovery-dr)
+
+##### Assignment(20 Minutes)
+:computer: Backup and Restore [Helm-guestbook](https://github.com/rajatrj16/argocd-example-apps/tree/main/helm-guestbook) application by exporting backup files created using argocd command line tool.
+
+<details>
+<summary>Answer</summary></br>
+backup:
+
+```yaml
+argocd app get argocd/helm-guestbook -o yaml > simple-app-backup.yaml
+  ```
+
+ _Delete the existing application_ or _deploy the application in another cluster_
+
+restore:
+
+```yaml
+argocd app create -f simple-app-backup.yaml
+```
+</details>
+
