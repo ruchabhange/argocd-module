@@ -28,7 +28,7 @@ Total number of days: 1.5 days
 - [14-end-to-end CI/CD pipeline using Jenkins(CI) and ArgoCD(CD)]()
 
 # Level-02
-- [01-User Management using ArgoCD native  RBAC permissions and using third party SSO login]()
+- [01-User Management]()
 - [02-ArgoCD with github actions for end-to-end CI/CD ]()
 - [03-ArgCD Sync Waves and phases]()
 - [04-ArgoCD Diff customizations, Notifications and Sync Windows]()
