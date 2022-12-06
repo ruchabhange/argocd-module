@@ -37,6 +37,8 @@ Total number of days: 1.5 days
 - [05-ArgoCD Disaster Recovery.]()
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
 
+
+
 # ArgoCD Level-02
 ## User Management(60 Minutes)
 ### a) Local Users/Accounts(20 Minutes)
