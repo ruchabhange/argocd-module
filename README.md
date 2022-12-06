@@ -28,12 +28,13 @@ Total number of days: 1.5 days
 - [14-end-to-end CI/CD pipeline using Jenkins(CI) and ArgoCD(CD)]()
 
 # Level-02
-- [01-User Management](#user-management60-minutes)
+- [01-User Management](#01-user-management60-minutes)
     - [Local Users/Accounts](#a-local-usersaccounts20-minutes)
     - [SSO](#b-sso40-minutes)
 - [02-ArgoCD with github actions for end-to-end CI/CD ]()
 - [03-ArgCD Sync Phases and Waves](#03-argcd-sync-phases-and-waves)
-- [04-ArgoCD Diffing customizations, Notifications and Sync Windows](04-argoCD-diffing-customizations-notifications-and-sync-windows)
+- [04-ArgoCD Diffing customizations, Notifications and Sync Windows](#04-argocd-diffing-customizations-notifications-and-sync-windows)
+   - [Diffing Customization](#a-diffing-customization) 
 - [05-ArgoCD Disaster Recovery.]()
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
 
