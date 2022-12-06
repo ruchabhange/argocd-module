@@ -37,6 +37,7 @@ Total number of days: 1.5 days
     - [Sync Windows](#b-sync-windows)
 - [04-ArgoCD Diffing customizations and Notifications](#04-argocd-diffing-customizations-and-notifications)
    - [Diffing Customization](#a-diffing-customization) 
+   - [Notifications](#b-notifications)
 - [05-ArgoCD Disaster Recovery.]()
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
 
