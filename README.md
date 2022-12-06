@@ -33,7 +33,7 @@ Total number of days: 1.5 days
     - [SSO](#b-sso40-minutes)
 - [02-ArgoCD with github actions for end-to-end CI/CD ]()
 - [03-ArgCD Sync Phases and Waves](#03-argcd-sync-phases-and-waves)
-- [04-ArgoCD Diff customizations, Notifications and Sync Windows]()
+- [04-ArgoCD Diffing customizations, Notifications and Sync Windows]()
 - [05-ArgoCD Disaster Recovery.]()
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
 
@@ -151,3 +151,51 @@ spec:
 ```
 as mentioned above we used sync wave 1 for customers service and wave 2 for web-frontend in this order hook for customers service will get executed before web-frontend
 </details>
+
+## 04-ArgoCD Diffing Customizations, Notifications and Sync Windows
+### a) Diffing Customization
+The diffing customization feature allows users to configure how ArgoCD behaves during the diff stage which is the step that verifies if an Application is synced or not. Argo CD allows you to optionally ignore differences of problematic resources. The diffing customization can be configured for single or multiple application resources or at a system level.
+- [Read][Diffing Customization](https://argo-cd.readthedocs.io/en/stable/user-guide/diffing/)
+- [Read][Application Level Configuration](https://argo-cd.readthedocs.io/en/stable/user-guide/diffing/#application-level-configuration)
+- [Read][System Level Confgiguration](https://argo-cd.readthedocs.io/en/stable/user-guide/diffing/#system-level-configuration)
+
+##### Assignmetn 
+:computer: Use this sample k8s application [repo](https://github.com/shehbaz-pathan/simple-microservices-app/tree/master/manifests) deploy this application using ArgoCD and later configure the diffing customization to ingoner the count of replicas for web-frontend deployment.
+<details>
+<summary>Answer</summary></br>
+
+- Deploy the application using ArgoCD
+- Set the replica count of web-frontend deployment to 2 by editing the web-frontend deployment manually, now check the sync status of the app it will show OutOfSync due to replica count changed for web-frontend deployment
+- Update the application with diffing configuration
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: customers-details
+  namespace: default
+spec:
+      ignoreDifferences:
+       - group: apps
+         kind: Deployment
+         namespace: default
+         name: web-frontend
+         jqPathExpressions:
+          - .spec.replicas
+      project: default
+      source:
+        repoURL: https://github.com/shehbaz-pathan/simple-microservices-app.git
+        targetRevision: HEAD
+        path: manifests
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: default
+      syncPolicy:
+        syncOptions:
+         - RespectIgnoreDifferences=true
+        automated:
+          prune: true
+```
+- Now change the replica count of web-frontend deployment to 2 and and check this time application sync status would not show OutOfSync because we are ignoring changes of web-frontend deployment for replica count
+</details>
+    
