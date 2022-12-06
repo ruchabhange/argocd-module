@@ -34,6 +34,7 @@ Total number of days: 1.5 days
 - [02-ArgoCD with github actions for end-to-end CI/CD ]()
 - [03-ArgCD Sync Phases, Waves and Sync Windows](#03-argcd-sync-phases-waves-and-sync-windows)
     - [Sync Phases and Waves](#a-sync-phases-and-waves) 
+    - [Sync Windows](#b-sync-windows)
 - [04-ArgoCD Diffing customizations, Notifications](#04-argocd-diffing-customizations-notifications-and-sync-windows)
    - [Diffing Customization](#a-diffing-customization) 
 - [05-ArgoCD Disaster Recovery.]()
@@ -155,6 +156,65 @@ spec:
 as mentioned above we used sync wave 1 for customers service and wave 2 for web-frontend in this order hook for customers service will get executed before web-frontend
 </details>
 
+## b) Sync Windows
+Sync windows are configurable windows of time where syncs will either be blocked or allowed. Using sync windows we can allow or block app snyc for the specific duration of either specific applications, namespaces or entire cluster, sync windows will be helpful for restricting the deployment of applications on specific time lets say deploying production apps during weekend only no app deployments during working hours etc.
+- [Read][Sync Windows](https://argo-cd.readthedocs.io/en/stable/user-guide/sync_windows/)
+
+##### Assignmetn 
+:computer: Create an allow sync window in default AppProject for entire cluster with duration of 2h between 8PM-10PM on all days also create a deny window as well of same duration and timing.
+<details>
+<summary>Answer</summary></br>
+
+- Update the default AppProject with the sync windows mentioned above
+```sh
+kubectl edit appproject default -n argocd
+```
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: default
+  namespace: argocd
+spec:
+  clusterResourceWhitelist:
+  - group: '*'
+    kind: '*'
+  destinations:
+  - namespace: '*'
+    server: '*'
+  sourceRepos:
+  - '*'
+  syncWindows:
+   - kind: allow
+    schedule: '0 20 * * *'
+    duration: 2h
+    clusters:
+    - in-cluster
+  - kind: deny
+    schedule: '0 20 * * *'
+    duration: 2h
+    clusters:
+    - in-cluster
+```
+</details>
+
+##### Quick Questions
+
+1. After creating above mentioned sync windows would you be able to sync any app between 8PM-10PM every day?
+<details>
+<summary>Answer</summary></br>
+
+> NO, because an active deny window will orverrides the an active allow window for you would not be able sync any application during that window
+</details>
+
+2. After creating above mentioned sync windows would you be able to sync any app at any time expect 8PM-10PM?
+<details>
+<summary>Answer</summary></br>
+
+> No, because there would no active allow window at any time expect 8PM-10PM, but we have an active deny window during the same time 8PM-10PM that means we would not be able to sync any application at any time.```
+</details>
+
 ## 04-ArgoCD Diffing Customizations, Notifications and Sync Windows
 ### a) Diffing Customization
 The diffing customization feature allows users to configure how ArgoCD behaves during the diff stage which is the step that verifies if an Application is synced or not. Argo CD allows you to optionally ignore differences of problematic resources. The diffing customization can be configured for single or multiple application resources or at a system level.
@@ -168,7 +228,7 @@ The diffing customization feature allows users to configure how ArgoCD behaves d
 <summary>Answer</summary></br>
 
 - Deploy the application using ArgoCD
-- Set the replica count of web-frontend deployment to 2 by editing the web-frontend deployment manually, now check the sync status of the app it will show OutOfSync due to replica count changed for web-frontend deployment
+- Set the replica count of web-frontend deployment to 2 by editing the web-frontend deployment manually, now check the sync status of the app it will show OutOfSync due to replica count changed for web-frontend deployment.
 - Update the application with diffing configuration
 
 ```yaml
