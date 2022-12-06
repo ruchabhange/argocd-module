@@ -32,8 +32,9 @@ Total number of days: 1.5 days
     - [Local Users/Accounts](#a-local-usersaccounts20-minutes)
     - [SSO](#b-sso40-minutes)
 - [02-ArgoCD with github actions for end-to-end CI/CD ]()
-- [03-ArgCD Sync Phases and Waves](#03-argcd-sync-phases-and-waves)
-- [04-ArgoCD Diffing customizations, Notifications and Sync Windows](#04-argocd-diffing-customizations-notifications-and-sync-windows)
+- [03-ArgCD Sync Phases, Waves and Sync Windows](#03-argcd-sync-phases-waves-and-sync-windows)
+    - [Sync Phases and Waves](#a-sync-phases-and-waves) 
+- [04-ArgoCD Diffing customizations, Notifications](#04-argocd-diffing-customizations-notifications-and-sync-windows)
    - [Diffing Customization](#a-diffing-customization) 
 - [05-ArgoCD Disaster Recovery.]()
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
@@ -96,7 +97,8 @@ ArgoCD allows us to integrate SSO to use our existing identity provider to acces
 Follow [this](https://argo-cd.readthedocs.io/en/stable/operator-manual/user-management/okta/#saml-with-dex) guide for ArgoCD SSO integration using Okta
 </details>
 
-## 03-ArgCD Sync Phases and Waves
+## 03-ArgCD Sync Phases, Waves and Sync Windows
+## a) Sync Phases and Waves
 Argo CD executes a sync operation in a number of steps. At a high-level, there are three phases pre-sync, sync and post-sync.
 
 Within each phase you can have one or more waves, that allows you to ensure certain resources are healthy before subsequent resources are synced.
