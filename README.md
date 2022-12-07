@@ -11,14 +11,14 @@ Total number of days: 1.5 days
     - [Gitops Principle]()
     - [Gitops tools]()
     - [Benefits and Drawback]()
-- [02-ArgoCd]()
-    - [Argocd Architecture]()
-    - [Argocd server Installation and CLI]() 
+- [02-ArgoCD]()
+    - [ArgoCD Architecture]()
+    - [ArgoCD server Installation and CLI]() 
 - [03-Adding git repos through UI, CLI and declarative way in argocd]()
 - [04-Understanding Multi Cluster Setup ]()
 - [05-Understanding HA Cluster Setup]()
-- [06-Argocd with Helm]()
-- [07-Argocd with Kustomize]()
+- [06-ArgoCD with Helm](#06-argocd-with-helm)
+- [07-ArgoCD with Kustomize]()
 - [08-Understanding App of Apps]()
 - [09-Understanding Application sets]()
 - [10-Assignment on AppicationSets]()
@@ -42,6 +42,52 @@ Total number of days: 1.5 days
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
 
 # ArgoCD Level-01
+## 06-Argocd with Helm
+We can install helm charts using ArgoCD.
+- [Read][Helm with ArgoCD](https://argo-cd.readthedocs.io/en/stable/user-guide/helm/)
+
+##### Assignment
+:computer: Deploy [this](https://github.com/shehbaz-pathan/simple-microservices-app/tree/helm-repo/customer-info) sample app helm chart using ArgoCD, use below details
+```
+helm repo: 	https://shehbaz-pathan.github.io/simple-microservices-app/chart
+chart version: 0.1.0
+```
+set the iamge of customers deployment to ```gcr.io/tetratelabs/customers:2.0.0``` in ArgoCD application to use different image than the default image from helm chart
+
+<details>
+<summary>Answer</summary></br>
+
+for this assignment application manifest would look like
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: customers
+  namespace: argocd
+spec:
+  project: default
+  source:
+    chart: customer-info
+    repoURL: https://shehbaz-pathan.github.io/simple-microservices-app/chart/
+    targetRevision: 0.1.0
+    helm:
+      releaseName: customers
+      parameters:
+        - name: customers.image
+          value: gcr.io/tetratelabs/customers:2.0.0
+  destination:
+    server: "https://kubernetes.default.svc"
+    namespace: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+```
+</details>
+
 ## 12-ArgoCD Integration With External Secrets Operator
 Secrets are the intgral part of modern day applications, secrets are used to store the store the sensitive data such as passwords, keys, APIs, tokens, and certificates, storing secrets on any vcs repository is not a good prctice. We can use external secrets operator with ArgoCD to store secrets required by application on any external secret managers like AWS Secret Manager, Google Secret Manager, HC Vault etc and pull them into the application without writing them down in any kubernetes manifests.
 
