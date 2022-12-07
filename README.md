@@ -95,7 +95,7 @@ The above example creates three Argo CD applications one for each defined cluste
 
 ##### Prerequisite
 
-- Two local kind clusers
+- Two local kind clusters
 - Argo CD multi-cluster set up
 
  :computer: Fork the following repository `https://github.com/shehbaz-pathan/simple-microservices-app.git` and configure an ApplicationSet for deploying applications on remote cluster alone with following parameters
@@ -202,6 +202,7 @@ spec:
           - CreateNamespace=true
 
 ```
+</details>
 
 # ArgoCD Level-02
 ## User Management(60 Minutes)
