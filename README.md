@@ -1,5 +1,3 @@
-# Argocd-module
-
 This module will walk you through the concepts of GitOps and Argocd(Gitops tools) with hands-on to gear up and start using Argocd deployment in your projects.
 
 Total number of days: 1.5 days
@@ -20,7 +18,7 @@ Total number of days: 1.5 days
 - [06-Argocd with Helm]()
 - [07-Argocd with Kustomize]()
 - [08-Understanding App of Apps]()
-- [09-Understanding Application sets]()
+- [09-Understanding Application sets](#ApplicationSet) 
 - [10-Assignment on AppicationSets]()
 - [11-Using Bitnami sealed secrets for storing secrets on git repos securely]()
 - [12-ArgoCD integration with external secret operator]()
@@ -36,6 +34,174 @@ Total number of days: 1.5 days
 - [04-ArgoCD Diff customizations, Notifications and Sync Windows]()
 - [05-ArgoCD Disaster Recovery.]()
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
+
+# ArgoCD Level-01
+
+## ApplicationSet
+
+
+ApplicationSet is used to create, modify, and manage multiple Argo CD applications at once. ApplicationSet uses templated automation for creating or modifying multiple applications while also targeting multiple clusters and namespaces.
+
+ApplicationSet Controller is installed alongside ArgoCD and creates multiple Argo Applications based on ApplicationSet Custom Resource.
+
+AppicationSet resource is made up of generators.A generator is responsible for generating parameters that will be rendered later in the template section of your ApplicationSet
+
+#### Types of generators in ArgoCD:
+- [List Generator](https://argocd-applicationset.readthedocs.io/en/stable/Generators-List/)
+- [Cluster Generator](https://argocd-applicationset.readthedocs.io/en/stable/Generators-Cluster/)
+- [Git generator](https://argocd-applicationset.readthedocs.io/en/stable/Generators-Git/)
+- [Matrix generator](https://argocd-applicationset.readthedocs.io/en/stable/Generators-Matrix/)
+- [Merge Generator](https://argocd-applicationset.readthedocs.io/en/stable/Generators-Merge/)
+- [SCM Provider Generator](https://argocd-applicationset.readthedocs.io/en/stable/Generators-SCM-Provider/)
+- [Pull Request Generator](https://argocd-applicationset.readthedocs.io/en/stable/Generators-Pull-Request/)
+- [Cluster Decision Resource Generator](https://argocd-applicationset.readthedocs.io/en/stable/Generators-Cluster-Decision-Resource/)
+
+Below is an example of an ApplicationSet resource.
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: guestbook
+spec:
+  generators:
+  - list:
+      elements:
+      - cluster: engineering-dev
+        url: https://1.2.3.4
+      - cluster: engineering-prod
+        url: https://2.4.6.8
+      - cluster: finance-preprod
+        url: https://9.8.7.6
+  template:
+    metadata:
+      name: '{{cluster}}-guestbook'
+    spec:
+      source:
+        repoURL: https://github.com/infra-team/cluster-deployments.git
+        targetRevision: HEAD
+        path: guestbook/{{cluster}}
+      destination:
+        server: '{{url}}'
+        namespace: guestbook
+```
+
+The template fields within an ApplicationSet spec are used to generate an Argo CD Application resource. 
+The Argo CD Application is created by combining the params from the generator with the fields from the template.
+The above example creates three Argo CD applications one for each defined cluster
+
+- [Read] [ApplicationSet controller](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/)
+
+#### Assignment
+
+##### Prerequisite
+
+- Two local kind clusers
+- Argo CD multi-cluster set up
+
+ :computer: Fork the following repository `https://github.com/shehbaz-pathan/simple-microservices-app.git` and configure an ApplicationSet for deploying applications on remote cluster alone with following parameters
+```
+ - application name: demo-application-sets
+ - project: default
+ - SYNC POLICY: auto
+ - repository URL: https://github.com/<your user>/simple-microservices-app.git
+ - path: manifests
+ - Cluster: Remote cluster
+ - NameSpace: default
+```
+<details>
+<summary>Answer</summary></br>
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: demo-applicationset
+  namespace: argocd
+spec:
+  generators:
+  - list:
+      elements:
+      - name: demo-application-sets
+        namespace: default
+        url: https://172.18.0.2:31413  # replace with remote server url
+
+  template:
+    metadata:
+      name: '{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/<your user>/simple-microservices-app.git
+        targetRevision: HEAD
+        path: manifests
+      destination:
+        server: '{{url}}'
+        namespace: '{{namespace}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true 
+```
+
+</details>
+
+:computer: Fork the following repo `https://github.com/ppratheesh/simple-microservices-app.git` and configure an ApplicationSet for deploying all the applications defined in cluster-addons directory except sample-app-three 
+on both clusters with following parameters
+
+
+```
+ - application name: <resource_directory_name>-<clustername>
+ - project: default
+ - SYNC POLICY: auto
+ - repository URL: https://github.com/<your name>/simple-microservices-app.git
+ - path: cluster-addons
+ - Cluster: Both clusters
+ - NameSpace: same as resource directory name
+```
+
+<details>
+<summary>Answer</summary></br>
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: ApplicationSet
+metadata:
+  name: cluster-git
+  namespace: argocd
+spec:
+  generators:
+    - matrix:
+        generators:
+          - git:
+              repoURL: https://github.com/<your name>/simple-microservices-app.git
+              revision: HEAD
+              directories:
+                - path: cluster-addons/*
+                - path: cluster-addons/sample-app-three
+                  exclude: true
+          - clusters: {}
+  template:
+    metadata:
+      name: '{{path.basename}}-{{name}}'
+    spec:
+      project: default
+      source:
+        repoURL: https://github.com/<your name>/simple-microservices-app.git
+        targetRevision: HEAD
+        path: '{{path}}'
+      destination:
+        server: '{{server}}'
+        namespace: '{{path.basename}}'
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+          - CreateNamespace=true
+
+```
 
 # ArgoCD Level-02
 ## User Management(60 Minutes)
