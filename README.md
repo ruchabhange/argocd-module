@@ -48,7 +48,7 @@ Secrets are the intgral part of modern day applications, secrets are used to sto
 - [Read][External Secrets Operator](https://external-secrets.io/v0.7.0-rc1/introduction/getting-started/)
 
 ##### Assigment
- Use this sample k8s application [repo](https://github.com/shehbaz-pathan/simple-microservices-app/tree/master/manifests) and deploy this application using ArgoCD, this app reads value for environment variable NAME from secret, store the value of this env variable in external secrets manager(AWS or Google) and pull that value using External Secrets Operator, integrate External Secrets Operator with ArgoCD.
+ Use this sample k8s application [repo](https://github.com/shehbaz-pathan/simple-microservices-app/tree/master/manifests/external-secrets-example) and deploy this application using ArgoCD, this app reads value for environment variable NAME from secret, store the value of this env variable in external secrets manager(AWS or Google) and pull that value using External Secrets Operator, integrate External Secrets Operator with ArgoCD.
  <details>
 <summary>Answer</summary></br>
 In this solution we will use Google Secret Manager for storing secret
