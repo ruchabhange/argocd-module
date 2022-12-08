@@ -31,14 +31,14 @@ Total number of days: 1.5 days
 - [01-User Management](#01-user-management)
     - [Local Users/Accounts](#a-local-usersaccounts)
     - [SSO](#b-sso)
-- [02-ArgoCD with github actions for end-to-end CI/CD ]()
+- [02-ArgoCD with github actions for end-to-end CI/CD](#02-argocd-with-github-actions-for-end-to-end-cicd)
 - [03-ArgCD Sync Phases, Waves and Sync Windows](#03-argcd-sync-phases-waves-and-sync-windows)
     - [Sync Phases and Waves](#a-sync-phases-and-waves) 
     - [Sync Windows](#b-sync-windows)
 - [04-ArgoCD Diffing customizations and Notifications](#04-argocd-diffing-customizations-and-notifications)
    - [Diffing Customization](#a-diffing-customization) 
    - [Notifications](#b-notifications)
-- [05-ArgoCD Disaster Recovery.]()
+- [05-ArgoCD Disaster Recovery.](#05-argocd-disaster-recovery-40-minutes)
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
 
 # ArgoCD Level-01
@@ -629,6 +629,176 @@ ArgoCD allows us to integrate SSO to use our existing identity provider to acces
 Follow [this](https://argo-cd.readthedocs.io/en/stable/operator-manual/user-management/okta/#saml-with-dex) guide for ArgoCD SSO integration using Okta
 </details>
 
+
+## 02-ArgoCD with github actions for end-to-end CI/CD
+
+Considering the GitOps principle your application and the configuration should be stored in a version controlled repository. All the changes made to the Code/Cluster config should be tracked in the code repository and triggered from the repo itself.
+
+There are few main tenants of this philosophy are:
+
+- Use a Git repository as a single source of truth.
+- Any change is made in the form of a Git commit.
+- When the application state differs from the desired state (that is: what’s in Git), a reconciliation loop detect the drift and make the adjustments to the cluster.
+
+##### Assignment(40 Minutes)
+:computer: Setup a CI workflow with GitHub Actions that should trigger a pipeline as and when there is a change commited in the repository. Once the CI pipeline is done argocd shpuld pick the changes and deploy in the cluster.
+
+Prerequisite
+- A kubernetes cluster
+- Any Sample application created in the above assignments
+- Running argocd instance
+
+<details>
+<summary>Answer</summary></br>
+
+You can use this [sample-application](https://github.com/rajatrj16/nginx-test-app/blob/master/index.html):
+
+```html
+<!DOCTYPE html>
+<Head>
+<title>
+Simplest page
+</title>
+<Head>
+<h1> This is the simplest HTML page</h1>
+```
+
+Create a docker image and push it to dockerhub
+Need to add the `DOCKERHUB_USERNAME` and `DOCKERHUB_TOKEN` secrets in the github repository.
+
+Setup a github action worflow in the sample application repository [.github/workflows/CI.yaml](https://github.com/rajatrj16/nginx-test-app/blob/master/.github/workflows/ci.yaml)
+
+```yaml
+name: CI
+on:
+  push:
+    branches:
+      - master
+jobs:
+  build:
+    name: create-and-push-image
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout Repo
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v2
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@v3
+        with:
+          context: .
+          file: ./Dockerfile
+          push: true
+          tags: rajatrj16/nginx-test-app:${{ github.sha }}
+
+      - name: Update Version
+        run: |
+          version=$(cat ./kubernetes/deployment.yaml | grep image: | awk '{print $2}' | cut -d ':' -f 2)
+          echo "$version"
+          sed -i "s/$version/${{ github.sha }}/" ./kubernetes/deployment.yaml
+          cat ./kubernetes/deployment.yaml | grep image: | awk '{print $2}'
+      
+      - name: Commit and push changes
+        uses: devops-infra/action-commit-push@v0.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          commit_message: Image version updated
+```
+
+Argocd works with helm, Kustomize or plane manifests.
+
+Plane manifests for the sample application [deployment.yaml](https://github.com/rajatrj16/nginx-test-app/blob/master/kubernetes/deployment.yaml)
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx-test-app
+  labels:
+    app: nginx
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+      - name: nginx-test-app
+        image: rajatrj16/nginx-test-app:latest
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx-test-app
+spec:
+  type: NodePort
+  selector:
+    app: nginx
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 80
+```
+
+Setup an application in argocd UI or using CLI
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: nginx-test-app
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/rajatrj16/nginx-test-app.git
+    targetRevision: HEAD
+    path: kubernetes
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: default
+  syncPolicy:
+    automated:
+      selfHeal: true
+      Prune: true
+      Replace: true
+      allowEmpty: true
+    syncOptions:
+    - CreateNamespace=true
+    - Prune=true
+    - Replace=true
+```
+Make sure the appliation is sync to fetch and deploy the latest change from code repository.
+
+Sync argocd app:
+
+```yaml
+argocd app sync nginx-test-app
+```
+
+Reference Repository: [nginx-test-app](https://github.com/rajatrj16/nginx-test-app.git)
+
+</details>
+
 ## 03-ArgCD Sync Phases, Waves and Sync Windows
 ## a) Sync Phases and Waves
 Argo CD executes a sync operation in a number of steps. At a high-level, there are three phases pre-sync, sync and post-sync.
@@ -840,4 +1010,30 @@ spec:
 once you first deploy above app after required slack related config you should get notifications like below while sync is running and when sync is succeeded
 
 ![Folder](./assets/argocd-notify.png)
+</details>
+
+## 05-ArgoCD Disaster Recovery (40 Minutes)
+Argocd data are stored in the kubernetes custer one should consider taking backup of the argocd data regularly to avoid downtime and outages. Argocd configuration export can be done per individual application or by just exporting all of the applications to a YAML file.
+It is generally recommended to store the applications individually and within the same git repository that the Kubernetes objects are defined so that they will be under revision control and available in the event of a disaster.
+- [Read][Disaster-recovery](https://argo-cd.readthedocs.io/en/stable/operator-manual/disaster_recovery/#disaster-recovery)
+- [Read][Disaster Recovery workflow](https://argoproj.github.io/argo-workflows/disaster-recovery/#disaster-recovery-dr)
+
+##### Assignment(20 Minutes)
+:computer: Backup and Restore [Helm-guestbook](https://github.com/rajatrj16/argocd-example-apps/tree/main/helm-guestbook) application by exporting backup files created using argocd command line tool.
+
+<details>
+<summary>Answer</summary></br>
+backup:
+
+```yaml
+argocd app get argocd/helm-guestbook -o yaml > simple-app-backup.yaml
+  ```
+
+ _Delete the existing application_ or _deploy the application in another cluster_
+
+restore:
+
+```yaml
+argocd app create -f simple-app-backup.yaml
+```
 </details>
