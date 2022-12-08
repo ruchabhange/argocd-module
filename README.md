@@ -49,10 +49,11 @@ We can install helm charts using ArgoCD.
 ##### Assignment
 :computer: Deploy [this](https://github.com/shehbaz-pathan/simple-microservices-app/tree/helm-repo/customer-info) sample app helm chart using ArgoCD, use below details
 ```
-helm repo: 	https://shehbaz-pathan.github.io/simple-microservices-app/chart
-chart version: 0.1.0
+Helm repo: 	https://shehbaz-pathan.github.io/simple-microservices-app/chart
+Chart name: customer-info
+Chart version: 0.1.0
 ```
-set the iamge of customers deployment to ```gcr.io/tetratelabs/customers:2.0.0``` in ArgoCD application to use different image than the default image from helm chart
+set the image of customers deployment to ```gcr.io/tetratelabs/customers:2.0.0``` in ArgoCD application to use different image than the default image from helm chart
 
 <details>
 <summary>Answer</summary></br>
