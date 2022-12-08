@@ -212,55 +212,8 @@ spec:
       selfHeal: true
 
 ```
-Run command `lkubectl apply -f env.yaml` which will create env-apps application with route to test and prod application. verify on the argo cd UI
+Run command `kubectl apply -f env.yaml` which will create env-apps application with route to test and prod application. verify on the argo cd UI
 </details>
-
-##### Prerequisite
-
-- SealedSecret Controller should be installed 
-- kubeseal utility should be installed
-
-:computer: Configure sealed secrets for the mysql applicaiton defined in [repo](https://github.com/ppratheesh/simple-microservices-app/tree/master/custom-app/mysql) and store it in git repo.
-Use ArgoCD to manage the secrets along with the application
-
-<details>
-<summary>Answer</summary></br>
-
-The sealed secret can be created with the following way
-
-1.`kubeseal <secret.yaml >secret.json`
-
-Sample `secret.yaml`
-```yaml
-apiVersion: v1
-kind: Secret
-metadata:
-   name: mysql-secret
-data:
-   username: cHJhdGhlZXNo
-   password: cGFzc3dvcmQ=
-```
-
-2.Upload to `secret.json` to the git repo after forking it
-
-3.Create Argo CD application resource
-```yaml
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: sealed-secret-demo
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: https://github.com/<your name>/simple-microservices-app.git
-    targetRevision: HEAD
-    path: custom-app/mysql
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: default
-
-```
 
 ## 09-ApplicationSet
 
