@@ -838,5 +838,6 @@ spec:
         - .spec.replicas
 ```
 once you first deploy above app after required slack related config you should get notifications like below while sync is running and when sync is succeeded
+
 ![Folder](./assets/argocd-notify.png)
 </details>
