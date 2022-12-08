@@ -390,8 +390,7 @@ Once we encrypt our secrets only the controller running in the target cluster ca
 
 The SealedSecrets are cluster and namespace specific.If you want to use the same secret for different clusters, you need to encrypt it for each cluster individually.
 
-![sealedsecrets](https://user-images.githubusercontent.com/51965567/206390557-3bd1a73c-6b12-41bc-8137-e629d010944d.svg)
-
+![diagram](https://user-images.githubusercontent.com/51965567/206392261-08d1b235-4815-4fe4-8c99-8a23aaa84c2a.svg)
 
 - [READ] - [Sealed Secrets](https://github.com/bitnami-labs/sealed-secrets)
 
