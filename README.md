@@ -124,6 +124,95 @@ Test the prod enviornmenttemplate is working properly by kustomization build and
 
 </details>
 
+## 08-Understanding App of Apps (20 minutes)
 
+Argo CDs App-of-Apps pattern enables us to programmatically and automatically generate Argo CD applications.We can create a route Argo CD application using the App-of-Apps pattern.The route Argo CD application points to a folder that includes the Argo CD application YAML definition files for each microservers or application.The application YAMLs for each microservers refers to a directory holding
+the application manifests.The idea here is to create a single Argo CD application and upload all of its definition files to a Git repository path.
+- [Read][App of Apps](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/#app-of-apps)
+
+##### Hands-on activity (30 minutes)</br>
+:computer: Create argocd application deployment for Test and Prod application using the yaml files created in Topic-07 create an application with Env-apps pointing to test and Prod application yaml with namespace test for test application and prod for prod application.
+
+<details>
+<summary>Answer</summary></br>
+We will create declarative Jobs for apps of apps for env.yaml and env-apps folder containing test and prod jobs.
+
+env.yaml
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: k8s-env-apps
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: (git repo where yaml are places)
+    targetRevision: HEAD
+    path: .(path)/env-apps/(test,Prod)yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+```
+env-apps/test.yaml
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: test-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git repo for application
+    targetRevision: HEAD
+    path: ./application/overlays/test (path to test manifest)
+   
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: test-app
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true  
+    automated:
+      prune: true
+      selfHeal: true
+```
+env-apps/prod.yaml
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: prod-app
+  namespace: argocd
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: git repo for application
+    targetRevision: HEAD
+    path: ./application/overlays/prod (dir where prod manifest are placed)
+   
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prod-app
+  syncPolicy:
+    syncOptions:
+      - CreateNamespace=true  
+    automated:
+      prune: true
+      selfHeal: true
+
+```
+Run command `lkubectl apply -f env.yaml` which will create env-apps application with route to test and prod application. verify on the argo cd UI
+</details>
 
 
