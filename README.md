@@ -110,7 +110,20 @@ jobs:
           context: .
           file: ./Dockerfile
           push: true
-          tags: rajatrj16/nginx-test-app:latest
+          tags: rajatrj16/nginx-test-app:${{ github.sha }}
+
+      - name: Update Version
+        run: |
+          version=$(cat ./kubernetes/deployment.yaml | grep image: | awk '{print $2}' | cut -d ':' -f 2)
+          echo "$version"
+          sed -i "s/$version/${{ github.sha }}/" ./kubernetes/deployment.yaml
+          cat ./kubernetes/deployment.yaml | grep image: | awk '{print $2}'
+      
+      - name: Commit and push changes
+        uses: devops-infra/action-commit-push@v0.3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          commit_message: Image version updated
 ```
 
 Argocd works with helm, Kustomize or plane manifests.
@@ -173,6 +186,9 @@ spec:
   syncPolicy:
     automated:
       selfHeal: true
+      Prune: true
+      Replace: true
+      allowEmpty: true
     syncOptions:
     - CreateNamespace=true
     - Prune=true
