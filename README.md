@@ -18,7 +18,7 @@ Total number of days: 1.5 days
 - [06-Argocd with Helm]()
 - [07-Argocd with Kustomize]()
 - [08-Understanding App of Apps]()
-- [09-Understanding Application sets](#ApplicationSet) 
+- [09-Understanding Application sets](#09-ApplicationSet) 
 - [10-Assignment on AppicationSets]()
 - [11-Using Bitnami sealed secrets for storing secrets on git repos securely](#11-Using-Bitnami-sealed-secrets-for-storing-secrets-on-git-repos-securely)
 - [12-ArgoCD integration with external secret operator]()
