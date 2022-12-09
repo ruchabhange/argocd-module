@@ -25,3 +25,21 @@ patches:
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
         value: 'http://customers.prod-app.svc.cluster.local'
+
+patches:
+  - target:
+      kind: Deployment
+      name: web-frontend
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: 'gcr.io/tetratelabs/web-frontend:1.0.0'
+        
+patches:
+  - target:
+      kind: Deployment
+      name: customers-v2
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/image
+        value: 'gcr.io/tetratelabs/customers:1.0.0'
