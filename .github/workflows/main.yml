@@ -33,7 +33,7 @@ jobs:
             /application/web-frontend/**
     -  name: image tag according to git commit 
        run: |
-           echo "git_hash=${{ (git rev-parse --short "$GITHUB_SHA") }} >> $GITHUB_ENV
+           echo "git_hash=${{ (git rev-parse --short "$GITHUB_SHA") }}" >> $GITHUB_ENV
     -  name: Build and push customer image
        if: steps.customers.outputs.any_changed == 'true'
        env:
