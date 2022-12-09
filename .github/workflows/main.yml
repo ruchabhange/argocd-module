@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+jobs:
+  build:
+    name: Building and Pushing the Image
+    runs-on: ubuntu-latest
+    steps:
+    
+    - name: Checkout
+      uses: actions/checkout@v2
+    
+    - name: Login to DockerHub
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_REG_USERNAME }}
+        password: ${{ secrets.DOCKER_REG_PASSWORD }}
+        
+    - name: File changes for customers
+      id: customers
+      uses: tj-actions/changed-files@v34
+      with:
+        files: |
+            /application/customers/**
+    
+    - name: File changes for web-frontend
+      id: web-fronend
+      uses: tj-actions/changed-files@v34
+      with:
+        files: |
+            /application/web-frontend/**
+            
+    -  name: Build and push customer image
+       if: steps.customers.outputs.any_changed == 'true'
+       id: build-and-push-customer-image
+       uses: docker/build-push-action@v3
+       with:
+        context: ./application/customers/Dockerfile
+        push: true
+        build-args: |
+         tags: {{ secrets.DOCKER_USERNAME }}/${{ env.image-name-customers }}:latest
+    -  name: Build and push webfrontend
+       if: steps.web-fronend.outputs.any_changed == 'true'
+       id: build-and-push-webfrontend-image
+       uses: docker/build-push-action@v3
+       with:
+        context: ./application/web-frontend/Dockerfile
+        push: true
+        build-args: |
+         tags: {{ secrets.DOCKER_USERNAME }}/${{ env.image-name-web-frontend }}:latest
+    
