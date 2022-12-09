@@ -40,7 +40,7 @@ jobs:
        id: build-and-push-customer-image
        uses: docker/build-push-action@v3
        with:
-        context: ./application/customers/Dockerfile
+        context: application/customers/Dockerfile
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.image-name-customers }}:${{ github.sha }}
     -  name: Build and push webfrontend
@@ -50,7 +50,7 @@ jobs:
        id: build-and-push-webfrontend-image
        uses: docker/build-push-action@v3
        with:
-        context: ./application/web-frontend/Dockerfile 
+        context: application/web-frontend/Dockerfile 
         push: true
         build-args: |
         tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.image-name-web-frontend }}:${{ github.sha }}
