@@ -17,7 +17,7 @@ spec:
         sidecar.istio.io/inject: "true"
     spec:
       containers:
-        - image: gcr.io/tetratelabs/web-frontend:eee3eb2d2da74cb054b66d190b36930f18f93766
+        - image: gcr.io/tetratelabs/web-frontend:1.0.0
           imagePullPolicy: Always
           name: web
           ports:
