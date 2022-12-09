@@ -655,3 +655,12 @@ spec:
     namespace: default
 
 ```
+
+</details>
+
+## 13 End-to-end CI/CD pipeline using Jenkins(CI) and ArgoCD(CD)
+
+Jenkins is a platform for creating a Continuous Integration/Continuous Delivery (CI/CD) environment. The system offers many different tools, languages, and automation tasks to aid in pipeline creation when developing and deploying programs. We can use jenkins with argocd for application.
+  
+- [Read][jenkinswith argocd](https://cloudyuga.guru/blog/jenkins-argo)
+- [Read][jenkins with argocd](https://yetiops.net/posts/argocd-jenkins-pipeline/)
