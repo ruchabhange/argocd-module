@@ -48,7 +48,7 @@ jobs:
     -  name: Build and push webfrontend
        if: steps.web-fronend.outputs.any_changed == 'true'
        env:
-         image-name-customers: backend-image
+         image-name-customers: frontend-image
        id: build-and-push-webfrontend-image
        uses: docker/build-push-action@v3
        with:
