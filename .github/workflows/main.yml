@@ -43,8 +43,8 @@ jobs:
         context: ./application/customers/Dockerfile
         push: true
         build-args: |
-         git_hash=$(git rev-parse --short "$GITHUB_SHA")
-         tags: {{ secrets.DOCKER_USERNAME }}/${{ env.image-name-customers }}:latest
+         # git_hash=$(git rev-parse --short "$GITHUB_SHA")
+         tags: {{ secrets.DOCKER_USERNAME }}/${{ env.image-name-customers }}:${{ github.sha }}
     -  name: Build and push webfrontend
        if: steps.web-fronend.outputs.any_changed == 'true'
        env:
@@ -55,7 +55,7 @@ jobs:
         context: ./application/web-frontend/Dockerfile
         push: true
         build-args: |
-         tags: {{ secrets.DOCKER_USERNAME }}/${{ env.image-name-web-frontend }}:$git_hash
+         tags: {{ secrets.DOCKER_USERNAME }}/${{ env.image-name-web-frontend }}:${{ github.sha }}
     
     
     -  name: Update Version for customer image
