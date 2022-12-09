@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Web Frontend</title>
+    <link rel="stylesheet" href="/css/style.css" />
+  </head>
+  <body class="bg-tetrate-green">
+    <div class="px-12 flex h-screen w-full items-center">
+      <div class="m-auto text-center">
+        <h1 class="text-5xl text-tetrate-orange">
+		Welcome to the Web Frontend <%= process.env.NAME %>!
+        </h1>
+        <h2 class="text-xl text-white font-semibold">Customers</h2>
+        <div class="mt-6 flex justify-center text-white">
+          <table class="table-auto">
+            <thead>
+              <tr
+                class="bg-tetrate-pink text-tetrate-black border border-white"
+              >
+                <% for (var c of Object.keys(customers[0])) { %>
+                <th class="px-4 py-2"><%= c.toUpperCase() %></th>
+                <% }%>
+              </tr>
+            </thead>
+            <tbody class="text-left">
+              <% for (var i=0; i< customers.length; i ++) { %>
+              <tr>
+                <% for (const c of Object.keys(customers[i])) { %>
+                <td class="border px-4 py-2"><%= customers[i][c] %></td>
+                <% }%>
+              </tr>
+              <% }%>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1,0 +1,17 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+bases:
+  - ../../base
+
+commonLabels:
+  purpose: Argocd-demo
+  env : test
+
+nameSuffix: -test
+
+replicas:
+  - name: web-frontend
+    count: 2
+  - name: customers-v2
+    count: 3
