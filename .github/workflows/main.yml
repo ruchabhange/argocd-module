@@ -33,7 +33,7 @@ jobs:
             /application/web-frontend/**
   
     -  name: Build and push customer image
-       #if: steps.customers.outputs.any_changed == 'true'
+       if: steps.customers.outputs.any_changed == 'true'
        env:
          image-name-customers: backend-image
          
@@ -54,6 +54,24 @@ jobs:
         push: true
         build-args: |
         tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.image-name-web-frontend }}:${{ github.sha }}
+    -  name: Update Version for customer image
+       run: |
+          version=$(cat ./application/kustomize-manifest/base/customers.yaml | grep image:  | awk '{print $3}' | cut -d ':' -f 2)
+          echo "$version"
+          sed -i "s/$version/${{ github.sha }}/" ./application/kustomize-manifest/base/customers.yaml
+          cat ./application/kustomize-manifest/base/customers.yaml | grep image: | awk '{print $3}'
+    
+    -  name: Update Version for webfrontend image
+       run: |
+          version=$(cat ./application/kustomize-manifest/base/web-frontend.yaml | grep image: | awk '{print $3}' | cut -d ':' -f 2)
+          echo "$version"
+          sed -i "s/$version/${{ github.sha }}/" ./application/kustomize-manifest/base/web-frontend.yaml
+          cat ./application/kustomize-manifest/base/web-frontend.yaml| grep image: | awk '{print $3}'
+    -  name: Commit and push changes
+       uses: devops-infra/action-commit-push@v0.3
+       with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          commit_message: Image version updated
     
     
   
