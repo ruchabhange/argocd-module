@@ -790,6 +790,173 @@ Jenkins is a platform for creating a Continuous Integration/Continuous Delivery 
 - [Read][jenkinswith argocd](https://cloudyuga.guru/blog/jenkins-argo)
 - [Read][jenkins with argocd](https://yetiops.net/posts/argocd-jenkins-pipeline/)
 
+##### Hands-on activity
+:computer: Create end-to-end CI/CD pipeline using Jenkins(CI) and ArgoCD, use [this](https://github.com/shehbaz-pathan/argocd-jenkins) sample app, this repo has two branches ```master``` and ```argocd```, master branch holds application source code and argocd branch holds kubernetes deployment manifests. Fork this repo and deploy a pipeline as below
+1. Deploy an ArgoCD application from the argocd branch
+2. Create a Jenkins pipeline which will build and push new docker image to docker hub whenever there is any code changes pushed to master branch for customers or web-frontend service
+3. Your pipeline should also be able to update new image in deployment manifests from argocd branch so that ArgoCD application should detect changes and sync to deploy new image
+
+<b>Code changes to test pipeline</b>
+
+<b>web-frontend</b>
+
+You can change the backgroud color of the web-frontend from```web-frontend/dist/views/index.ejs``` file, there already available css classes for background color are ```bg-tetrate-blue```, ```bg-tetrate-black``` and ```bg-tetrate-green``` you can use one of them or you can add new css class for bg-color in ```web-frontend/dist/public/css/style.css```.
+
+<b>customers</b>
+
+You can update the ```customers/customers.json``` file to change the customers details e.g you can add or remove new customers or you can add or remove any field related to customer like id,age,address etc.
+<details>
+<summary>Answer</summary></br>
+
+<b>Pre-requisites</b>
+>- Docker - You should have docker installed on your jenkins node
+>- Git - You should have git installed on your jenkins node 
+>- yq - You should have yq utility to be installed on your jenkins node, we are using yq for updating deployment manifests. read about yq more [here](https://mikefarah.gitbook.io/yq/)
+>- Add your github and docker hub credentials in jenkins to push images to docker hub and to push updated manifests to github
+
+- Deploy an ArgoCD application from argocd branch
+
+```
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: simple-customer-app
+  namespace: argocd
+spec:
+      project: default
+      source:
+        repoURL: https://github.com/<your github account>/<your repo>.git
+        targetRevision: argocd
+        path: manifests/
+      destination:
+        server: https://kubernetes.default.svc
+        namespace: default
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+```
+
+<b> Customers </b>
+
+- Create a Jenkinsfile for customers service
+
+```
+pipeline {
+    agent any
+    environment {
+      github = credentials('github')
+      dockerhub = credentials('dockerhub')
+    }
+     stages {
+        stage('build') {
+          when {
+            changeset "customers/**"
+          }
+           steps {
+               sh '''
+                 until docker container ls ; do sleep 3 ;done && docker build -t ${dockerhub_USR}/<your docker hub repo>:customers-${GIT_COMMIT} ./customers/
+                 docker login -u ${dockerhub_USR} -p ${dockerhub_PSW} && docker push ${dockerhub_USR}/<your docker hub repo>:customers-${GIT_COMMIT}
+                 '''
+           }
+        }
+       stage('deploy') {
+        
+          when {
+            changeset "customers/**"
+          }
+
+           steps {
+               sh '''
+                     git config --global user.email "<your github account email>" 
+                     git checkout argocd
+                     git pull origin argocd
+                     export image_tag="${dockerhub_USR}/<you docker hub repo>:customers-${GIT_COMMIT}" 
+                     yq eval '.spec.template.spec.containers[0].image = env(image_tag)' -i ./manifests/customers.yaml
+                     git add . 
+                     git commit -m "Updated image tag for customers" 
+                     git push https://${github_USR}:${github_PSW}@github.com/<your github account>/<your github repo name>.git
+                  '''
+           }
+       }
+
+     }
+}
+```
+Change the below values from above Jenkins file
+
+```
+<your docker hub repo>: name of your docker hub repo
+<your github account email>: your github email for authorization
+<your github account>: you github account name
+<your github repo name>: name of your repo
+```
+Create pipeline in jenkins for customers service by using above jenkins file.
+
+<b>Web-frontend</b>
+
+- Create Jenkinsfile for web-frontend service as below
+
+```
+pipeline {
+    agent any
+    environment {
+      github = credentials('github')
+      dockerhub = credentials('dockerhub')
+    }
+     stages {
+        stage('build') {
+          when {
+            changeset "web-frontend/**"
+          }
+           steps {
+               sh '''
+                 until docker container ls ; do sleep 3 ;done && docker build -t ${dockerhub_USR}/<your docker hub repo>:web-frontend-${GIT_COMMIT} ./web-frontend/
+                 docker login -u ${dockerhub_USR} -p ${dockerhub_PSW} && docker push ${dockerhub_USR}/<your docker hub repo>:web-frontend-${GIT_COMMIT}
+                 '''
+           }
+        }
+       stage('deploy') {
+        
+          when {
+            changeset "web-frontend/**"
+          }
+
+           steps {
+               sh '''
+                     git config --global user.email "<your github account email>" 
+                     git checkout argocd
+                     git pull origin argocd
+                     export image_tag="${dockerhub_USR}/<your docker hub repo>:web-frontend-${GIT_COMMIT}" 
+                     yq eval '.spec.template.spec.containers[0].image = env(image_tag)' -i ./manifests/web-frontend.yaml
+                     git add . 
+                     git commit -m "Updated image tag for web-frontend" 
+                     git push https://${github_USR}:${github_PSW}@github.com/<your github account>/<your github repo name>.git
+                  '''
+             
+           }
+       }
+
+     }
+}
+
+```
+Change the below values from above Jenkins file
+
+```
+<your docker hub repo>: name of your docker hub repo
+<your github account email>: your github email for authorization
+<your github account>: you github account name
+<your github repo name>: name of your repo
+```
+Create pipeline in jenkins for web-frontend service by using above jenkins file.
+
+After you successfully deploy ArgoCD app and jenkins pipeline, you can made any changes in code and push changes to master branch which will triger jenkins pipeline for either customers or web-fronted service based the changes you have made then pipeline will build and push new image to docker hub and also update the deployment manifest with new image, once the updated deployment manifest pushed to github ArgoCD application will sync to deploy neew image.
+
+
+</details>
+
+
 # ArgoCD Level-02
 ## 01-User Management
 ### a) Local Users/Accounts
