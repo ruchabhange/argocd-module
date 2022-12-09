@@ -25,7 +25,7 @@ patches:
         path: /spec/template/spec/containers/0/env/0/value
         value: 'http://customers.test-app.svc.cluster.local'
 
-pathches:
+patches:
   - target:
       kind: Deployment
       name: web-frontend
@@ -34,7 +34,7 @@ pathches:
         path: /spec/template/spec/containers/0/image
         value: 'gcr.io/tetratelabs/web-frontend:1.0.0'
         
-pathches:
+patches:
   - target:
       kind: Deployment
       name: customers-v2
