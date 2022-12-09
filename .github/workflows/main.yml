@@ -42,9 +42,6 @@ jobs:
        with:
         context: ./application/customers/Dockerfile
         push: true
-        #build-args: |
-         # echo 'git_hash=$(git rev-parse --short "$GITHUB_SHA")' 
-         # echo "${{ github.sha }}"
         tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.image-name-customers }}:${{ github.sha }}
     -  name: Build and push webfrontend
        if: steps.web-fronend.outputs.any_changed == 'true'
@@ -53,10 +50,10 @@ jobs:
        id: build-and-push-webfrontend-image
        uses: docker/build-push-action@v3
        with:
-        context: ./application/web-frontend/Dockerfile
+        context: ./application/web-frontend/Dockerfile 
         push: true
         build-args: |
-         tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.image-name-web-frontend }}:${{ github.sha }}
+        tags: ${{ secrets.DOCKER_USERNAME }}/${{ env.image-name-web-frontend }}:${{ github.sha }}
     
     
   
