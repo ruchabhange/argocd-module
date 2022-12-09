@@ -35,6 +35,219 @@ Total number of days: 1.5 days
 - [05-ArgoCD Disaster Recovery.]()
 - [06-ArgoCD with ArgoRollouts for progressive delivery]()
 
+## 01-Introduction to GitOps
+The term GitOps was coined in August, 2017 by Weaveworks.
+
+GitOps is a way to do Kubernetes cluster management and application delivery.  
+
+GitOps works by using Git as a single source of truth for declarative infrastructure and applications.
+
+With GitOps, the use of software agents can alert on any drift between Git and what's running in a cluster, and if there's a difference, Kubernetes reconcilers automatically update or rollback the cluster depending on the case. 
+
+<b>Push based VS Pull based CICD</b>  
+
+- Push-based pipeline means that code starts with the CI system and may continue its path through a series of encoded scripts or uses ‘kubectl’ by hand.  CI systems can be known as attack vectors for production. Because potential we expose credentials outside of your cluster. 
+
+- GitOps uses a pull strategy that consists of two key components: a “Deployment Automator” that watches the image registry and a “Deployment Synchronizer” that sits in the cluster to maintain its state.
+
+### Gitops Principle
+
+1. <b>The entire system described declaratively. </b>  
+With Gitops, Kubernetes is just one example of many modern cloud native tools that are “declarative” and that can be treated as code. Declarative means that configuration is guaranteed by a set of facts instead of by a set of instructions. 
+
+2. <b>The canonical desired system state versioned in Git.</b>  
+With the declaration of your system stored in a version control system, and serving as your canonical source of truth, you have a single place from which everything is derived and driven. This trivializes rollbacks; where you can use a `Git revert` to go back to your previous application state.
+
+3. <b>Approved changes that can be automatically applied to the system.</b>    
+Once you have the declared state kept in Git, the next step is to allow any changes to that state to be automatically applied to your system. What's significant about this is that you don't need cluster credentials to make a change to your system. With GitOps,
+
+4. <b>Software agents to ensure correctness and alert on divergence.</b>  
+Once the state of your system is declared and kept under version control, software agents can inform you whenever reality doesn’t match your expectations.  The use of agents also ensures that your entire system is self-healing. like in the case of human error.
+
+### Gitops tools
+
+`ArgoCD`: A GitOps operator for Kubernetes with a web interface  
+`Flux`: The GitOps Kubernetes operator by the creators of GitOps — Weaveworks  
+`Gitkube`: A tool for building and deploying docker images on Kubernetes using git push  
+`JenkinsX`: Continuous Delivery on Kubernetes with built-in GitOps  
+`Terragrunt`: A wrapper for Terraform for keeping configurations DRY, and managing remote state  
+`WKSctl`: A tool for Kubernetes cluster configuration management based on GitOps principles  
+`Helm Operator`: An operator for using GitOps on K8s with Helm  
+`werf`: A CLI tool to build images and deploy them to Kubernetes via push-based approach  
+
+
+### Benefits
+
+By applying GitOps best practices, there is a ‘source of truth’ for both your infrastructure and application code, allowing development teams to increase velocity and improve system reliability.
+
+- Lightweight and vendor-netural as it is based on git protocol 
+- Faster, Safer, Immutable and Reproducible deployments (git hosted yaml files)
+- Eliminating configuraion drift like manual changes directly to the cluster
+- Uses familiar tools and processes (git repo and CI pipeline)
+- Revisions with history (git version history)
+
+For more details, https://www.weave.works/technologies/gitops/#key-benefits-of-gitops
+
+
+### Drawback
+
+- Doesn't help with Secret Management (Requires to use Vault or Sealed secrets)
+- Number of Git repositories (Separate code repo and manifest repo)
+- Challenges with programmatic updates like multiple CI processes generates Pull request for new change
+- Governance other than PR approval (the only approval before CD)
+- Malformed conig manifests (linting, syntax validation etc)
+
+Refs: 
+- https://www.gitops.tech/
+- https://www.weave.works/technologies/gitops/
+- https://github.com/weaveworks/awesome-gitops
+
+## 02-ArgoCD
+<b>What is?</b>  
+Argo CD is a declarative, GitOps continuous delivery tool for Kubernetes.
+
+Argo CD consider Git repositories as the source of truth for defining desired application state and automate the deployment of desired application state in the specified target environment. 
+
+<b>Why?</b>  
+Application definitions, configurations, and environments should be declarative and version controlled in Git.  
+Application deployment and lifecycle management should be automated, auditable, and easy to understand.  
+It can deploy multiple clusters and provides auditability, compliance, security,RBAC, SSo, etc.
+
+<b>How it work?</b>  
+It follows GitOps pattern by using Git repo as source of truth.  
+ArgoCD automates the synchronization from git repository to the target environment. It can keep checking on kubernetes manifest yaml, Helm charts, Kustomize apps, etc.
+
+### Argocd Architecture
+
+<b>Key Components
+1. API Server
+2. Repository Server
+3. Applicaion Controller  
+</b>
+
+![Diagram](https://argo-cd.readthedocs.io/en/stable/assets/argocd_architecture.png)
+
+Read more: [ArgoCD Architecture](https://argo-cd.readthedocs.io/en/stable/operator-manual/architecture/)  
+Read more like Application and Projects: [ArgoCD Core Concepts ](https://argo-cd.readthedocs.io/en/stable/core_concepts/)
+
+### Argocd server Installation and CLI
+<b>Requirements  </b>
+- Installed kubectl command-line tool.
+- Kubernetes cluster running on minikube, AWS EKS, GKE, etc.
+- Have a kubeconfig file (default location is ~/.kube/config).
+
+<b>Installation Options</b>   
+Argo CD has two type of installations: multi-tenant and core.
+
+<b>1. Multi-Tenant</b>
+The multi-tenant installation is the most common way to install Argo CD. This type of installation is typically used to service multiple application developer teams in the organization and maintained by a platform team.
+
+- Non High Availability
+Not recommended for production use. This type of installation is typically used during evaluation period for demonstrations and testing.
+  - install.yaml - Standard Argo CD installation with cluster-admin access.
+  - namespace-install.yaml - Installation of Argo CD which requires only namespace level privileges (does not need cluster roles). Use this manifest set if you do not need Argo CD to deploy applications in the same cluster that Argo CD runs in, and will rely solely on inputted cluster credentials. 
+- High Availability
+High Availability installation is recommended for production use. This bundle includes the same components but tuned for high availability and resiliency.
+  - ha/install.yaml - the same as install.yaml but with multiple replicas for supported components.
+  - ha/namespace-install.yaml - the same as namespace-install.yaml but with multiple replicas for supported components.
+
+<b>2. Core</b> - [Read here](https://argo-cd.readthedocs.io/en/stable/operator-manual/installation/#core)
+
+<b>Installation</b>  
+1. Install Argo CD
+```
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+```
+2. Download ArgoCD CLI (Latest Linux)
+
+```
+curl -sSL -o argocd-linux-amd64 https://github.com/argoproj/argo-cd/releases/latest/download/argocd-linux-amd64
+sudo install -m 555 argocd-linux-amd64 /usr/local/bin/argocd
+rm argocd-linux-amd64
+```
+3. Access The Argo CD Server
+```
+kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+kubectl get svc argocd-server -n argocd
+```
+Port Forwarding (Optional)  
+Kubectl port-forwarding can also be used to connect to the API server without exposing the service.  
+```
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+```
+Open GUI browser with https://localhost:port and login using admin user and password.  
+
+4. Login Using The CLI  
+The initial password for the admin account is auto-generated and stored in a secret named `argocd-initial-admin-secret`.  
+```
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
+```
+Login using credentials and ArgoCD Server IP:
+```
+argocd login <ARGOCD_SERVER>
+```
+
+>Configure the client OS to trust the self signed certificate.  
+>Use the --insecure flag on all Argo CD CLI operations in this guide.  
+
+Read more: [ArgoCD Server Installation types](https://argo-cd.readthedocs.io/en/stable/operator-manual/installation/)  
+Read more: [Getting started with ArgoCD](https://argo-cd.readthedocs.io/en/stable/getting_started/)
+
+## 03-Adding git repos through UI, CLI and declarative way in argocd
+An example repository containing a guestbook application is available at https://github.com/argoproj/argocd-example-apps.git to demonstrate how Argo CD works.
+
+<b>Creating Apps Via CLI</b>
+
+First we need to set the current namespace to argocd
+```
+kubectl config set-context --current --namespace=argocd
+```
+Create the example guestbook application
+```
+argocd app create guestbook --repo https://github.com/argoproj/argocd-example-apps.git --path guestbook --dest-server https://kubernetes.default.svc --dest-namespace default
+```
+
+<b>Creating App via UI</b> [Read here](https://argo-cd.readthedocs.io/en/stable/getting_started/#creating-apps-via-ui)
+
+<b>Creating App via Declarative way</b>  
+
+Argo CD applications, projects and settings can be defined declaratively using Kubernetes manifests. These can be updated using `kubectl apply`, without needing to touch the argocd command-line tool.
+
+It is defined by two key pieces of information in yaml manifest:
+
+- `source` reference to the desired state in Git (repository, revision, path, environment)
+- `destination` reference to the target cluster and namespace.
+
+```
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps.git
+    targetRevision: HEAD
+    path: guestbook
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: guestbook
+``` 
+Now, just do `kubectl apply -f app.yaml` 
+
+Read more here: [Declarative-setup Apps and AppProject](https://argo-cd.readthedocs.io/en/stable/operator-manual/declarative-setup/)
+
+## 04-Understanding Multi Cluster Setup
+
+<b>WIP</b>
+
+## 05-Understanding HA Cluster Setup
+
+<b>WIP</b>
+
+
 ## 07-Argocd with Kustomize (60 minutes)
 
 Kustomize traverses a Kubernetes manifest to add, remove or update configuration options without forking. It is available both as a standalone binary and as a native feature of kubectl (and by extension oc)
