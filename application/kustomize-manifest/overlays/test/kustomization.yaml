@@ -32,7 +32,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/image
-        value: 'gcr.io/tetratelabs/web-frontend:1.0.0'
+        value: 'gcr.io/tetratelabs/web-frontend:3a2e38dc1b60cd5ace7def424bcd809b0a11d43e'
         
 patches:
   - target:
@@ -41,4 +41,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/image
-        value: 'gcr.io/tetratelabs/customers:1.0.0'
+        value: 'gcr.io/tetratelabs/customers:3a2e38dc1b60cd5ace7def424bcd809b0a11d43e'
