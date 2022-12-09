@@ -15,3 +15,12 @@ replicas:
     count: 2
   - name: customers-v2
     count: 3
+
+patches:
+  - target:
+      kind: Deployment
+      name: web-frontend
+    patch: |-
+      - op: replace
+        path: /spec/template/spec/containers/0/env/0/value
+        value: 'http://customers.test-app.svc.cluster.local'

@@ -6,7 +6,7 @@ bases:
 
 commonLabels:
   purpose: Argocd-demo
-  env : test
+  env : prod
 
 namePrefix: prod-
 
@@ -23,5 +23,5 @@ patches:
       name: web-frontend
     patch: |-
       - op: replace
-        path: /spec/template/spec/containers/env/0/value
+        path: /spec/template/spec/containers/0/env/0/value
         value: 'http://customers.prod-app.svc.cluster.local'
