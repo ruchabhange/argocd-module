@@ -19,7 +19,7 @@ spec:
         sidecar.istio.io/inject: "true"
     spec:
       containers:
-        - image: gcr.io/tetratelabs/customers:a368ec98827f84cc3bb1b81aff6b37af9278685f
+        - image: gcr.io/tetratelabs/customers:fa0a4ee7d56258994047f28e248c3c6b9932fa99
           imagePullPolicy: Always
           name: svc
           ports:
