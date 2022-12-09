@@ -37,7 +37,7 @@ pathches:
 pathches:
   - target:
       kind: Deployment
-      name: customers
+      name: customers-v2
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/image
