@@ -58,21 +58,4 @@ jobs:
          tags: {{ secrets.DOCKER_USERNAME }}/${{ env.image-name-web-frontend }}:${{ github.sha }}
     
     
-    -  name: Update Version for customer image
-       run: |
-          version=$(cat ./application/kustomize-manifest/base/customers.yaml | grep image: | awk '{print $2}' | cut -d ':' -f 2)
-          echo "$version"
-          sed -i "s/$version/${{ github.sha }}/" ./application/kustomize-manifest/base/customers.yaml
-          cat ./application/kustomize-manifest/base/customers.yaml | grep image: | awk '{print $2}'
-    
-    -  name: Update Version for webfrontend image
-       run: |
-          version=$(cat ./application/kustomize-manifest/base/web-frontend.yaml | grep image: | awk '{print $2}' | cut -d ':' -f 2)
-          echo "$version"
-          sed -i "s/$version/${{ github.sha }}/" ./application/kustomize-manifest/base/web-frontend.yaml
-          cat ./application/kustomize-manifest/base/web-frontend.yaml| grep image: | awk '{print $2}'
-    -  name: Commit and push changes
-       uses: devops-infra/action-commit-push@v0.3
-       with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          commit_message: Image version updated
+  
