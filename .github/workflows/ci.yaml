@@ -56,10 +56,10 @@ jobs:
     -  name: Update Version for customer image
        if: steps.customers.outputs.any_changed == 'true'
        run: |
-          version=$(cat ./application/kustomize-manifest/overlays/prod/kustomization.yaml | grep customers: | awk '{print $2}' | cut -d ':' -f 2 | rev | cut -c2- | rev)
+          version=$(cat ./application/kustomize-manifest/overlays/prod/kustomization.yaml | grep backend-image: | awk '{print $2}' | cut -d ':' -f 2 | rev | cut -c2- | rev)
           echo "$version for Production envirornment"
           sed -i "s/$version/${{ github.sha }}/" ./application/kustomize-manifest/overlays/prod/kustomization.yaml
-          cat ./application/kustomize-manifest/overlays/prod/kustomization.yaml | grep customers: | awk '{print $2}'
+          cat ./application/kustomize-manifest/overlays/prod/kustomization.yaml | grep backend-image: | awk '{print $2}'
           version=$(cat ./application/kustomize-manifest/overlays/test/kustomization.yaml | grep customers: | awk '{print $2}' | cut -d ':' -f 2 | rev | cut -c2- | rev)
           echo "$version for test enviornment"
           sed -i "s/$version/${{ github.sha }}/" ./application/kustomize-manifest/overlays/test/kustomization.yaml
@@ -71,11 +71,11 @@ jobs:
           version=$(cat ./application/kustomize-manifest/overlays/prod/kustomization.yaml | grep web-frontend: | awk '{print $2}' | cut -d ':' -f 2 | rev | cut -c2- | rev)
           echo "$version for Production envirornment"
           sed -i "s/$version/${{ github.sha }}/" ./application/kustomize-manifest/overlays/prod/kustomization.yaml
-          cat ./application/kustomize-manifest/overlays/prod/kustomization.yaml | grep customers: | awk '{print $2}'
+          cat ./application/kustomize-manifest/overlays/prod/kustomization.yaml | grep web-frontend: | awk '{print $2}'
           version=$(cat ./application/kustomize-manifest/overlays/test/kustomization.yaml | grep web-frontend: | awk '{print $2}' | cut -d ':' -f 2 | rev | cut -c2- | rev)
           echo "$version for test enviornment"
           sed -i "s/$version/${{ github.sha }}/" ./application/kustomize-manifest/overlays/test/kustomization.yaml
-          cat ./application/kustomize-manifest/overlays/test/kustomization.yaml | grep customers: | awk '{print $2}' 
+          cat ./application/kustomize-manifest/overlays/test/kustomization.yaml | grep web-frontend: | awk '{print $2}' 
     -  name: Commit and push changes
        uses: devops-infra/action-commit-push@v0.3
        with:
