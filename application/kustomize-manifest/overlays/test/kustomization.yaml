@@ -23,7 +23,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
-        value: 'http://customers.test-app.svc.cluster.local'
+        value: 'http://customers-test.test-app.svc.cluster.local'
 
 patches:
   - target:
