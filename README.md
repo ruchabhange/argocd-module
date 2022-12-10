@@ -1506,7 +1506,7 @@ Progressive delivery is the process of releasing updates of a product in a contr
 - [READ][Progressive Delivery](https://argoproj.github.io/argo-rollouts/concepts/#progressive-delivery)
 
 ##### Hands-on activity
-:computer: Deploy an Argo Rollout resource using ArgoCD, use ArgoRollouts canary strategy to deploy and promote new version of your app, you can use the same assignment from [jenkins](#13-end-to-end-cicd-pipeline-using-jenkinsci-and-argocdcd) and change the Deployment resource to the Argo Rollout resource with canary strategy.
+:computer: Deploy an Argo Rollout resource using ArgoCD, use ArgoRollouts canary strategy to deploy and promote new version of your app, you can use the same assignment from [jenkins](#12-end-to-end-cicd-pipeline-using-jenkinsci-and-argocdcd) and change the Deployment resource to the Argo Rollout resource with canary strategy.
 <details>
 <summary>Answer</summary></br>
 
