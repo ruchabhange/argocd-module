@@ -31,7 +31,7 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/image
-        value: 'ruchabhange/frontend-image:c6b5e1c10fca14afec6df3e819e81a30f97ccf09'
+        value: 'ruchabhange/frontend-image:5509b873db89262b8725f3aa0345d0de3fc733d7'
         
   - target:
       kind: Deployment
@@ -39,4 +39,4 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/image
-        value: 'ruchabhange/backend-image:c6b5e1c10fca14afec6df3e819e81a30f97ccf09'
+        value: 'ruchabhange/backend-image:5509b873db89262b8725f3aa0345d0de3fc733d7'
