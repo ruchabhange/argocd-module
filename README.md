@@ -20,10 +20,9 @@ Total number of days: 1.5 days
 - [07-ArgoCD with Kustomize](#07-argocd-with-kustomize-60-minutes)
 - [08-Understanding App of Apps](#08-understanding-app-of-apps-20-minutes)
 - [09-Understanding Application sets](#09-applicationset)
-- [10-Assignment on AppicationSets](#10-assignment)
-- [11-Using Bitnami sealed secrets for storing secrets on git repos securely](#11-using-bitnami-sealed-secrets-for-storing-secrets-on-git-repos-securely)
-- [12-ArgoCD integration With External Secrets Operator](#12-argocd-integration-with-external-secrets-operator)
-- [13-end-to-end CI/CD pipeline using Jenkins(CI) and ArgoCD(CD)](#13-end-to-end-cicd-pipeline-using-jenkinsci-and-argocdcd)
+- [10-Using Bitnami sealed secrets for storing secrets on git repos securely](#11-using-bitnami-sealed-secrets-for-storing-secrets-on-git-repos-securely)
+- [11-ArgoCD integration With External Secrets Operator](#12-argocd-integration-with-external-secrets-operator)
+- [12-end-to-end CI/CD pipeline using Jenkins(CI) and ArgoCD(CD)](#13-end-to-end-cicd-pipeline-using-jenkinsci-and-argocdcd)
 
 # Level-02
 - [01-User Management](#01-user-management)
@@ -533,9 +532,8 @@ The above example creates three Argo CD applications one for each defined cluste
 
 - [Read] [ApplicationSet controller](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/)
 
-#### 10-Assignment
-
-##### Prerequisite
+##### Hands-on activity (30 minutes)</br>
+:computer: ##### Prerequisite
 
 - Two local kind clusters
 - Argo CD multi-cluster set up
@@ -646,7 +644,7 @@ spec:
 ```
 </details>
 
-## 11-Using Bitnami sealed secrets for storing secrets on git repos securely
+## 10-Using Bitnami sealed secrets for storing secrets on git repos securely
 
 Argo CD is un-opinionated about how secrets are managed. One of the most popular tools to manage gitops secrets is Bitnami Sealed Secrets 
 
@@ -709,7 +707,7 @@ spec:
 ```
 </details>
 
-## 12-ArgoCD Integration With External Secrets Operator
+## 11-ArgoCD Integration With External Secrets Operator
 Secrets are the intgral part of modern day applications, secrets are used to store the store the sensitive data such as passwords, keys, APIs, tokens, and certificates, storing secrets on any vcs repository is not a good prctice. We can use external secrets operator with ArgoCD to store secrets required by application on any external secret managers like AWS Secret Manager, Google Secret Manager, HC Vault etc and pull them into the application without writing them down in any kubernetes manifests.
 
 - [Read][External Secrets Operator](https://external-secrets.io/v0.7.0-rc1/introduction/getting-started/)
@@ -783,7 +781,7 @@ Expected Result:
 
 </details>
 
-## 13 End-to-end CI/CD pipeline using Jenkins(CI) and ArgoCD(CD)
+## 12 End-to-end CI/CD pipeline using Jenkins(CI) and ArgoCD(CD)
 
 Jenkins is a platform for creating a Continuous Integration/Continuous Delivery (CI/CD) environment. The system offers many different tools, languages, and automation tasks to aid in pipeline creation when developing and deploying programs. We can use jenkins with argocd for application.
   
