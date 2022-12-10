@@ -8,7 +8,7 @@ commonLabels:
   purpose: Argocd-demo
   env : prod
 
-namePrefix: prod-
+#namePrefix: prod-
 
 replicas:
   - name: web-frontend
