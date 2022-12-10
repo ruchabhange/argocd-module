@@ -296,9 +296,6 @@ spec:
 
 For Advance use-case refer [ApplicationSet](https://argo-cd.readthedocs.io/en/stable/user-guide/application-set/).
 
-https://argo-cd.readthedocs.io/en/stable/user-guide/commands/argocd_cluster_add/
-https://blog.knoldus.com/how-to-manage-multiple-clusters-using-argocd/
-
 ## 05-Understanding HA Cluster Setup
 
 Argo CD is largely stateless, all data is persisted as Kubernetes objects, which in turn is stored in Kubernetes' etcd. Redis is only used as a throw-away cache and can be lost. When lost, it will be rebuilt without loss of service.
