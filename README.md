@@ -246,11 +246,89 @@ Read more here: [Declarative-setup Apps and AppProject](https://argo-cd.readthed
 
 ## 04-Understanding Multi Cluster Setup
 
-<b>WIP</b>
+ArgoCD can sync applications on the Kubernetes cluster it is running on and can also manage external clusters. It can be configured to only have access to a restricted set of namespaces.
+
+Credentials to the other clusters’ API Servers are stored as secrets in ArgoCD’s namespace. ArgoCD is useful feature for managing all deployments at a single place. The built-in RBAC mechanism gives options to control access to deployments to different environments only to certain users.
+
+<b>Prerequisite</b>
+
+- Installed kubectl
+- Installed ArgoCD in one Cluster(Primary)
+- Setup the External clusters on EKS or GKE
+- Have kubeconfig file for both clusters
+
+### Add External Cluster 
+
+ArgoCD CLI we will use and it can get the cluster credentials from the kubeconfig file.
+
+```
+kubectl config set-cluster prod --server=https://1.2.3.4 --certificate-authority=prod.crt
+kubectl config set-credentials admin --client-certificate=admin.crt --client-key=admin.key
+kubectl config set-context admin-prod --cluster=prod --user=admin --namespace=prod-app
+```
+Add Cluster and Verify
+```
+argocd cluster add admin-prod
+
+arocd cluster list
+```
+Check external cluster secrets
+```
+kubectl describe secret SecretName -n argocd 
+```
+Now Deploy application ArgoCD config for external cluster.
+```
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: guestbook
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/argoproj/argocd-example-apps.git
+    targetRevision: HEAD
+    path: guestbook
+  destination:
+    server: https://1.2.3.4
+    namespace: guestbook
+```
+
+For Advance use-case refer [ApplicationSet](https://argo-cd.readthedocs.io/en/stable/user-guide/application-set/).
+
+https://argo-cd.readthedocs.io/en/stable/user-guide/commands/argocd_cluster_add/
+https://blog.knoldus.com/how-to-manage-multiple-clusters-using-argocd/
 
 ## 05-Understanding HA Cluster Setup
 
-<b>WIP</b>
+Argo CD is largely stateless, all data is persisted as Kubernetes objects, which in turn is stored in Kubernetes' etcd. Redis is only used as a throw-away cache and can be lost. When lost, it will be rebuilt without loss of service.
+
+A set of HA manifests are provided for users who wish to run Argo CD in a highly available manner. This runs more containers, and runs Redis in HA mode.
+
+Ref: [HA Setup Manifests](https://github.com/argoproj/argo-cd/tree/master/manifests)
+
+Require at least three different nodes due to pod anti-affinity roles in the specs.
+
+### Scaling Up Argo Components
+
+Four main components which we can scale up to support HA.
+
+<b>argocd-repo-server</b>  
+The argocd-repo-server is responsible for cloning Git repository, keeping it up to date and generating manifests using the appropriate tool.
+
+<b>argocd-application-controller</b>
+
+The argocd-application-controller uses argocd-repo-server to get generated manifests and Kubernetes API server to get actual cluster state.
+
+<b>argocd-server</b>
+
+The argocd-server is stateless and probably least likely to cause issues. You might consider increasing number of replicas to 3 or more to ensure there is no downtime during upgrades.
+
+<b>argocd-dex-server, argocd-redis</b>
+
+The argocd-dex-server uses an in-memory database, and two or more instances would have inconsistent data. argocd-redis is pre-configured with the understanding of only three total redis servers/sentinels.
+
+Read More: [HA Cluster Setup](https://argo-cd.readthedocs.io/en/stable/operator-manual/high_availability/)
 
 ## 06-Argocd with Helm
 We can install helm charts using ArgoCD.
