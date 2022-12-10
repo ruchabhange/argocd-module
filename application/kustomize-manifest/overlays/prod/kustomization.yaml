@@ -8,7 +8,7 @@ commonLabels:
   purpose: Argocd-demo
   env : prod
 
-namePrefix: prod-
+#namePrefix: prod-
 
 replicas:
   - name: web-frontend
@@ -24,18 +24,14 @@ patches:
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/env/0/value
-        value: 'http://prod-customers.prod-app.svc.cluster.local'
-
-patches:
+        value: 'http://customers.prod-app.svc.cluster.local'
   - target:
       kind: Deployment
       name: web-frontend
     patch: |-
       - op: replace
         path: /spec/template/spec/containers/0/image
-        value: 'ruchabhange/frontend-image:3a2e38dc1b60cd5ace7def424bcd809b0a11d43e'
-        
-patches:
+        value: 'ruchabhange/backend-image:3a2e38dc1b60cd5ace7def424bcd809b0a11d43e'
   - target:
       kind: Deployment
       name: customers-v2
