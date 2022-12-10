@@ -36,7 +36,7 @@ Total number of days: 1.5 days
    - [Diffing Customization](#a-diffing-customization) 
    - [Notifications](#b-notifications)
 - [05-ArgoCD Disaster Recovery.](#05-argocd-disaster-recovery-40-minutes)
-- [06-ArgoCD with ArgoRollouts for progressive delivery]()
+- [06-ArgoCD with ArgoRollouts for progressive delivery](#06-argocd-with-argorollouts-for-progressive-delivery)
 
 # ArgoCD Level-01
 
@@ -1494,4 +1494,107 @@ restore:
 ```yaml
 argocd app create -f simple-app-backup.yaml
 ```
+</details>
+
+## 06-ArgoCD with ArgoRollouts for progressive delivery
+Argo Rollouts is a Kubernetes controller used for progressive delivery and is part of the Argo open source project. It includes a set of custom resource definitions (CRDs) that introduce advanced deployment capabilities to Kubernetes with features like progressive delivery, blue-green deployment, canary releases, and canary analysis.
+- [READ][Argo Rollous](https://argoproj.github.io/argo-rollouts/)
+
+<b>Progressive Delivery</b>
+
+Progressive delivery is the process of releasing updates of a product in a controlled and gradual manner, thereby reducing the risk of the release.
+- [READ][Progressive Delivery](https://argoproj.github.io/argo-rollouts/concepts/#progressive-delivery)
+
+##### Hands-on activity
+:computer: Deploy an Argo Rollout resource using ArgoCD, use ArgoRollouts canary strategy to deploy and promote new version of your app, you can use the same assignment from [jenkins](#13-end-to-end-cicd-pipeline-using-jenkinsci-and-argocdcd) and change the Deployment resource to the Argo Rollout resource with canary strategy.
+<details>
+<summary>Answer</summary></br>
+
+- Update the customers.yaml file and change the deployment to rollout as below
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: customers
+  labels:
+    app: customers
+spec:
+  revisionHistoryLimit: 3
+  replicas: 1
+  selector:
+    matchLabels:
+      app: customers
+  template:
+    metadata:
+      labels:
+        app: customers
+    spec:
+      containers:
+        - image: 6255/customer-info:customers-7efbd1643a0e3b8b957b5241dc3c444d886d5c8b
+          imagePullPolicy: Always
+          name: svc
+          ports:
+            - containerPort: 3000
+  strategy:
+    canary:
+      steps:
+      - setWeight: 10
+      - pause:
+          duration: 2m
+      - setWeight: 20
+      - pause:
+          duration: 2m
+      - setWeight: 50
+      - pause:
+          duration: 2m
+```
+- Update the web-frontend.yaml file and change the deployment to rollout as below
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Rollout
+metadata:
+  name: web-frontend
+  labels:
+    app: web-frontend
+spec:
+  revisionHistoryLimit: 3
+  replicas: 1
+  selector:
+    matchLabels:
+      app: web-frontend
+  template:
+    metadata:
+      labels:
+        app: web-frontend
+    spec:
+      containers:
+        - image: 6255/customer-info:web-frontend-783157e89108fb6205b7a77920a7b44573a3e8aa
+          imagePullPolicy: Always
+          name: web
+          ports:
+            - containerPort: 8080
+          env:
+            - name: CUSTOMER_SERVICE_URL
+              value: 'http://customers'
+  strategy:
+    canary:
+      steps:
+      - setWeight: 10
+      - pause:
+          duration: 2m
+      - setWeight: 20
+      - pause:
+          duration: 2m
+      - setWeight: 50
+      - pause:
+          duration: 2m
+```
+push these changes to argocd branch and sync the ArgoCD app.
+- Now update the application code, e.g change the backgroud color of frontend or update customer details in customers.json file and push the changes, this would build and deploy new image. Argo Rollout will create replicas for new version based on the weight value in each step e.g if we have 2 replicas running for current version and we have set initial weight of new version to 50 then Argo Rollout will start a 2 replicas of new version to forward 50% of traffic to new version and will increase and decrease no of replicas based on weight of subsequent steps.
+
+- once the new version of app get deployed, check and verify that new version of app getting traffic as per the wieghts specified in canary steps, use below command to check the status of Rollout.
+```sh
+kubectl argo rollouts get rollout <rollout name > -w
 </details>
