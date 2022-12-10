@@ -8,7 +8,7 @@ commonLabels:
   purpose: Argocd-demo
   env : test
 
-nameSuffix: -test
+#nameSuffix: -test
 
 replicas:
   - name: web-frontend
