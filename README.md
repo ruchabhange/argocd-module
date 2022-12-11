@@ -16,12 +16,12 @@ Total number of days: 1.5 days
 - [03-Adding git repos through UI, CLI and declarative way in argocd](#03-adding-git-repos-through-ui-cli-and-declarative-way-in-argocd)
 - [04-Understanding Multi Cluster Setup ]()
 - [05-Understanding HA Cluster Setup]()
-- [06-ArgoCD with Helm](#06-argocd-with-helm)
+- [06-ArgoCD with Helm](#06-argocd-with-helm-30-minutes)
 - [07-ArgoCD with Kustomize](#07-argocd-with-kustomize-60-minutes)
 - [08-Understanding App of Apps](#08-understanding-app-of-apps-20-minutes)
 - [09-Understanding Application sets](#09-applicationset)
 - [10-Assignment on AppicationSets](#10-assignment)
-- [11-Using Bitnami sealed secrets for storing secrets on git repos securely](#11-using-bitnami-sealed-secrets-for-storing-secrets-on-git-repos-securely)
+- [11-ArgoCD with HC Vault and Bitnami sealed secrets](#11-ArgoCD-with-HC-Vault-and-Bitnami-sealed-secrets)
 - [12-ArgoCD integration With External Secrets Operator](#12-argocd-integration-with-external-secrets-operator)
 - [13-end-to-end CI/CD pipeline using Jenkins(CI) and ArgoCD(CD)](#13-end-to-end-cicd-pipeline-using-jenkinsci-and-argocdcd)
 
@@ -253,23 +253,25 @@ Read more here: [Declarative-setup Apps and AppProject](https://argo-cd.readthed
 
 <b>WIP</b>
 
-## 06-Argocd with Helm
-We can install helm charts using ArgoCD.
-- [Read][Helm with ArgoCD](https://argo-cd.readthedocs.io/en/stable/user-guide/helm/)
 
-##### Assignment
-:computer: Deploy [this](https://github.com/shehbaz-pathan/simple-microservices-app/tree/helm-repo/customer-info) sample app helm chart using ArgoCD, use below details
+## 06-ArgoCD with Helm(30 minutes)
+
+We can directly connect packaged helm char with Argo CD and Argo CD will monitor it for new versions.
+When we deploying helm charts using Argo CD the application is no longer a helm applicaiton. The helm chart 
+is then considered as an Argo app that can only operated by Argo CD.
+
+- [READ] - [Argo CD with Helm](https://argo-cd.readthedocs.io/en/stable/user-guide/helm/)
+
+#### Hands-on activity (15 minutes)
+
+:computer: Deploy the [sample app helm chart](https://github.com/shehbaz-pathan/simple-microservices-app/tree/helm-repo/customer-info) using Argo CD.The sample app should be deployed with an image  `gcr.io/tetratelabs/customers:2.0.0` 
 ```
 Helm repo: 	https://shehbaz-pathan.github.io/simple-microservices-app/chart
 Chart name: customer-info
 Chart version: 0.1.0
 ```
-set the image of customers deployment to ```gcr.io/tetratelabs/customers:2.0.0``` in ArgoCD application to use different image than the default image from helm chart
-
 <details>
 <summary>Answer</summary></br>
-
-for this assignment application manifest would look like
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -537,7 +539,7 @@ The above example creates three Argo CD applications one for each defined cluste
 
 ##### Prerequisite
 
-- Two local kind clusters
+- Two local Kubernetes clusters
 - Argo CD multi-cluster set up
 
  :computer: Fork the following repository `https://github.com/shehbaz-pathan/simple-microservices-app.git` and configure an ApplicationSet for deploying applications on remote cluster alone with following parameters
@@ -646,7 +648,7 @@ spec:
 ```
 </details>
 
-## 11-Using Bitnami sealed secrets for storing secrets on git repos securely
+## 11-ArgoCD with HC Vault and Bitnami sealed secrets
 
 Argo CD is un-opinionated about how secrets are managed. One of the most popular tools to manage gitops secrets is Bitnami Sealed Secrets 
 
