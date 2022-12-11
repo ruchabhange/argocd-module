@@ -327,23 +327,24 @@ The argocd-dex-server uses an in-memory database, and two or more instances woul
 
 Read More: [HA Cluster Setup](https://argo-cd.readthedocs.io/en/stable/operator-manual/high_availability/)
 
-## 06-Argocd with Helm
-We can install helm charts using ArgoCD.
-- [Read][Helm with ArgoCD](https://argo-cd.readthedocs.io/en/stable/user-guide/helm/)
+## 06-ArgoCD with Helm(30 minutes)
 
-##### Assignment
-:computer: Deploy [this](https://github.com/shehbaz-pathan/simple-microservices-app/tree/helm-repo/customer-info) sample app helm chart using ArgoCD, use below details
+We can directly connect packaged helm char with Argo CD and Argo CD will monitor it for new versions.
+When we deploying helm charts using Argo CD the application is no longer a helm applicaiton. The helm chart 
+is then considered as an Argo app that can only operated by Argo CD.
+
+- [READ] - [Argo CD with Helm](https://argo-cd.readthedocs.io/en/stable/user-guide/helm/)
+
+#### Hands-on activity (15 minutes)
+
+:computer: Deploy the [sample app helm chart](https://github.com/shehbaz-pathan/simple-microservices-app/tree/helm-repo/customer-info) using Argo CD.The sample app should be deployed with an image  `gcr.io/tetratelabs/customers:2.0.0` 
 ```
 Helm repo: 	https://shehbaz-pathan.github.io/simple-microservices-app/chart
 Chart name: customer-info
 Chart version: 0.1.0
 ```
-set the image of customers deployment to ```gcr.io/tetratelabs/customers:2.0.0``` in ArgoCD application to use different image than the default image from helm chart
-
 <details>
 <summary>Answer</summary></br>
-
-for this assignment application manifest would look like
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
