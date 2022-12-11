@@ -16,13 +16,13 @@ Total number of days: 1.5 days
 - [03-Adding git repos through UI, CLI and declarative way in argocd](#03-adding-git-repos-through-ui-cli-and-declarative-way-in-argocd)
 - [04-Understanding Multi Cluster Setup ](#04-understanding-multi-cluster-setup)
 - [05-Understanding HA Cluster Setup](#05-understanding-ha-cluster-setup)
-- [06-ArgoCD with Helm](#06-argocd-with-helm)
+- [06-ArgoCD with Helm](#06-argocd-with-helm30-minutes)
 - [07-ArgoCD with Kustomize](#07-argocd-with-kustomize-60-minutes)
 - [08-Understanding App of Apps](#08-understanding-app-of-apps-20-minutes)
 - [09-Understanding Application sets](#09-applicationset)
-- [10-ArgoCD with HC Vault and Bitnami sealed secrets](#10-ArgoCD-with-HC-Vault-and-Bitnami-sealed-secrets)
-- [11-ArgoCD integration With External Secrets Operator](#12-argocd-integration-with-external-secrets-operator)
-- [12-end-to-end CI/CD pipeline using Jenkins(CI) and ArgoCD(CD)](#13-end-to-end-cicd-pipeline-using-jenkinsci-and-argocdcd)
+- [10-ArgoCD with HC Vault and Bitnami sealed secrets](#10-argocd-with-hc-vault-and-bitnami-sealed-secrets)
+- [11-ArgoCD integration With External Secrets Operator](#11-argocd-integration-with-external-secrets-operator)
+- [12-end-to-end CI/CD pipeline using Jenkins(CI) and ArgoCD(CD)](#12-end-to-end-cicd-pipeline-using-jenkinsci-and-argocdcd)
 
 # Level-02
 - [01-User Management](#01-user-management)
@@ -957,8 +957,11 @@ pipeline {
      stages {
         stage('build') {
           when {
+           allOf {
             changeset "customers/**"
+            not { changeset pattern: "customers/Jenkinsfile" }
           }
+        } 
            steps {
                sh '''
                  until docker container ls ; do sleep 3 ;done && docker build -t ${dockerhub_USR}/<your docker hub repo>:customers-${GIT_COMMIT} ./customers/
@@ -969,8 +972,11 @@ pipeline {
        stage('deploy') {
         
           when {
+           allOf {
             changeset "customers/**"
+            not { changeset pattern: "customers/Jenkinsfile" }
           }
+        } 
 
            steps {
                sh '''
@@ -1013,8 +1019,11 @@ pipeline {
      stages {
         stage('build') {
           when {
+           allOf {
             changeset "web-frontend/**"
+            not { changeset pattern: "web-frontend/Jenkinsfile" }
           }
+        } 
            steps {
                sh '''
                  until docker container ls ; do sleep 3 ;done && docker build -t ${dockerhub_USR}/<your docker hub repo>:web-frontend-${GIT_COMMIT} ./web-frontend/
@@ -1024,9 +1033,12 @@ pipeline {
         }
        stage('deploy') {
         
-          when {
+           when {
+           allOf {
             changeset "web-frontend/**"
+            not { changeset pattern: "web-frontend/Jenkinsfile" }
           }
+        }
 
            steps {
                sh '''
@@ -1057,7 +1069,7 @@ Change the below values from above Jenkins file
 ```
 Create pipeline in jenkins for web-frontend service by using above jenkins file.
 
-After you successfully deploy ArgoCD app and jenkins pipeline, you can made any changes in code and push changes to master branch which will triger jenkins pipeline for either customers or web-fronted service based the changes you have made then pipeline will build and push new image to docker hub and also update the deployment manifest with new image, once the updated deployment manifest pushed to github ArgoCD application will sync to deploy neew image.
+After you successfully deploy ArgoCD app and jenkins pipeline, you can make any changes in code and push those changes to master branch, it will triger jenkins pipeline for either customers or web-fronted service based the changes you have made then pipeline will build and push new image to docker hub and also update the deployment manifest with new image, once the updated deployment manifest pushed to github then ArgoCD application will sync to deploy new image.
 
 
 </details>
