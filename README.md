@@ -329,7 +329,7 @@ Read More: [HA Cluster Setup](https://argo-cd.readthedocs.io/en/stable/operator-
 
 ## 06-ArgoCD with Helm(30 minutes)
 
-We can directly connect packaged helm char with Argo CD and Argo CD will monitor it for new versions.
+We can directly connect packaged helm chat with Argo CD and Argo CD will monitor it for new versions.
 When we deploying helm charts using Argo CD the application is no longer a helm applicaiton. The helm chart 
 is then considered as an Argo app that can only operated by Argo CD.
 
