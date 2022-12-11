@@ -20,7 +20,7 @@ Total number of days: 1.5 days
 - [07-ArgoCD with Kustomize](#07-argocd-with-kustomize-60-minutes)
 - [08-Understanding App of Apps](#08-understanding-app-of-apps-20-minutes)
 - [09-Understanding Application sets](#09-applicationset)
-- [10-Using Bitnami sealed secrets for storing secrets on git repos securely](#11-using-bitnami-sealed-secrets-for-storing-secrets-on-git-repos-securely)
+- [10-ArgoCD with HC Vault and Bitnami sealed secrets](#10-ArgoCD-with-HC-Vault-and-Bitnami-sealed-secrets)
 - [11-ArgoCD integration With External Secrets Operator](#12-argocd-integration-with-external-secrets-operator)
 - [12-end-to-end CI/CD pipeline using Jenkins(CI) and ArgoCD(CD)](#13-end-to-end-cicd-pipeline-using-jenkinsci-and-argocdcd)
 
@@ -720,7 +720,9 @@ spec:
 ```
 </details>
 
-## 10-Using Bitnami sealed secrets for storing secrets on git repos securely
+## 10-ArgoCD with HC Vault and Bitnami sealed secrets
+
+#### Bitnami sealed secrets
 
 Argo CD is un-opinionated about how secrets are managed. One of the most popular tools to manage gitops secrets is Bitnami Sealed Secrets 
 
@@ -782,6 +784,36 @@ spec:
 
 ```
 </details>
+
+#### HC Vault
+
+We can integrate HC Vault with Argo CD using Argo CD Vault Plugin
+
+The Argo CD Vault Plugin  is an Argo CD configuration management plugin compatible with many secret management tools (HashiCorp Vault, IBM Cloud Secrets Manager, AWS Secrets Manager, etc.).
+
+The Argo CD Vault Plugin allows for a placeholder to be stored in git instead of an actual Kubernetes secret.
+
+sample kubernets secret would look like 
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mysecret
+type: Opaque
+data:
+  TOKEN: <myToken>
+```
+
+  - Argo CD pulls the above secret manifest template from GitHub
+  - The Vault Plugin is triggered by the presence of a placeholder in the template
+  - The plugin authenticates with Vault and pulls the secret 
+  - The retrieved secret is injected into the template replacing the placeholder
+  - Argo CD then applies the updated manifest to Kubernetes
+
+[READ] - [Argocd vault plugin](https://argocd-vault-plugin.readthedocs.io/en/stable/)
+
+
 
 ## 11-ArgoCD Integration With External Secrets Operator
 Secrets are the intgral part of modern day applications, secrets are used to store the store the sensitive data such as passwords, keys, APIs, tokens, and certificates, storing secrets on any vcs repository is not a good prctice. We can use external secrets operator with ArgoCD to store secrets required by application on any external secret managers like AWS Secret Manager, Google Secret Manager, HC Vault etc and pull them into the application without writing them down in any kubernetes manifests.
