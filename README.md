@@ -609,7 +609,7 @@ The above example creates three Argo CD applications one for each defined cluste
 - [Read] [ApplicationSet controller](https://argo-cd.readthedocs.io/en/stable/operator-manual/applicationset/)
 
 ##### Hands-on activity (30 minutes)</br>
-:computer: ##### Prerequisite
+##### Prerequisite
 
 - Two local kind clusters
 - Argo CD multi-cluster set up
