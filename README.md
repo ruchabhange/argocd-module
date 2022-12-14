@@ -788,9 +788,11 @@ spec:
 ```
 </details>
 
+4.Do a curl test  `curl <node_ip>:30080` and check if you can see the secret
+
 #### HC Vault
 
-We can integrate HC Vault with Argo CD using Argo CD Vault Plugin
+We can integrate HC Vault with Argo CD using  Argo CD Vault Plugin
 
 The Argo CD Vault Plugin  is an Argo CD configuration management plugin compatible with many secret management tools (HashiCorp Vault, IBM Cloud Secrets Manager, AWS Secrets Manager, etc.).
 
@@ -875,15 +877,11 @@ use ArgoCD to deploy the secrets along with the application
         selfHeal: true
 
   ```
-  
-
-
    Once the Vault has been deployed exec into vault pod and store the secret as following
 
    ```
    vault kv put secret/my-nginx password="secret-password"
    vault kv get secret/my-nginx
-
    ```
 - Deploy nginx applicaiton and secrets with following Argo CD applicaiton resource.
    ```yaml
@@ -913,6 +911,8 @@ use ArgoCD to deploy the secrets along with the application
   ```
   
 </details>
+
+  - Do a curl test  `curl <node_ip>:30090` and check if you can see the secret
 
 ## 11-ArgoCD Integration With External Secrets Operator
 Secrets are the intgral part of modern day applications, secrets are used to store the store the sensitive data such as passwords, keys, APIs, tokens, and certificates, storing secrets on any vcs repository is not a good prctice. We can use external secrets operator with ArgoCD to store secrets required by application on any external secret managers like AWS Secret Manager, Google Secret Manager, HC Vault etc and pull them into the application without writing them down in any kubernetes manifests.
