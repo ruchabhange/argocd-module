@@ -611,7 +611,7 @@ The above example creates three Argo CD applications one for each defined cluste
 ##### Hands-on activity (30 minutes)</br>
 ##### Prerequisite
 
-- Two local kind clusters
+- Two local Kubernetes clusters
 - Argo CD multi-cluster set up
 
  :computer: Fork the following repository `https://github.com/shehbaz-pathan/simple-microservices-app.git` and configure an ApplicationSet for deploying applications on remote cluster alone with following parameters
@@ -663,7 +663,7 @@ spec:
 
 </details>
 
-:computer: Fork the following repo `https://github.com/ppratheesh/simple-microservices-app.git` and configure an ApplicationSet for deploying all the applications defined in cluster-addons directory except sample-app-three 
+:computer: Fork the following repo `https://github.com/ppratheesh/simple-microservices-app.git` and configure an ApplicationSet for deploying all applications defined in `custom-app/ApplicationSet` directory except sample-app-three 
 on both clusters with following parameters
 
 
@@ -672,7 +672,6 @@ on both clusters with following parameters
  - project: default
  - SYNC POLICY: auto
  - repository URL: https://github.com/<your name>/simple-microservices-app.git
- - path: cluster-addons
  - Cluster: Both clusters
  - NameSpace: same as resource directory name
 ```
@@ -694,8 +693,8 @@ spec:
               repoURL: https://github.com/<your name>/simple-microservices-app.git
               revision: HEAD
               directories:
-                - path: cluster-addons/*
-                - path: cluster-addons/sample-app-three
+                - path: custom-app/ApplicationSet/*
+                - path: custom-app/ApplicationSet/sample-app-three
                   exclude: true
           - clusters: {}
   template:
@@ -742,8 +741,8 @@ The SealedSecrets are cluster and namespace specific.If you want to use the same
 - SealedSecret Controller should be installed 
 - kubeseal utility should be installed
 
-:computer: Configure sealed secrets for the mysql applicaiton defined in [repo](https://github.com/ppratheesh/simple-microservices-app/tree/master/custom-app/mysql) and store it in git repo.
-Use ArgoCD to manage the secrets along with the application
+:computer: Configure sealed secrets for the nginx applicaiton defined in the directory `custom-app/BitnamiSecret` of [repo](https://github.com/ppratheesh/simple-microservices-app.git) and store it in git repo.
+Use ArgoCD to deploy the secrets along with the application
 
 <details>
 <summary>Answer</summary></br>
@@ -757,10 +756,9 @@ Sample `secret.yaml`
 apiVersion: v1
 kind: Secret
 metadata:
-   name: mysql-secret
+   name: my-nginx
 data:
-   username: cHJhdGhlZXNo
-   password: cGFzc3dvcmQ=
+  MY_SECRET: TXl0ZXN0cGFzc3dvcmQ=
 ```
 
 2.Upload to `secret.json` to the git repo after forking it
@@ -777,11 +775,16 @@ spec:
   source:
     repoURL: https://github.com/<your name>/simple-microservices-app.git
     targetRevision: HEAD
-    path: custom-app/mysql
+    path: custom-app/BitnamiSecret
   destination:
     server: https://kubernetes.default.svc
     namespace: default
-
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+        - CreateNamespace=true
 ```
 </details>
 
@@ -800,6 +803,8 @@ apiVersion: v1
 kind: Secret
 metadata:
   name: mysecret
+  annotations:
+    avp.kubernetes.io/path: "secret/data/my-token"
 type: Opaque
 data:
   TOKEN: <myToken>
@@ -813,7 +818,101 @@ data:
 
 [READ] - [Argocd vault plugin](https://argocd-vault-plugin.readthedocs.io/en/stable/)
 
+#### Hands-on activity
 
+##### Prerequisite
+
+- HC Vault should be installed and configure with credentials
+- Argocd vault plugin should be configured
+
+:computer: Configure Argo CD to deploy the nginx applicaiton defined in `custom-app/Vault` directory of [repo](https://github.com/ppratheesh/simple-microservices-app.git). Store the secrets required for the applicaiton in Vault and
+use ArgoCD to deploy the secrets along with the application 
+
+<details>
+<summary>Answer</summary></br>
+
+- You can deploy vault with following Argo CD applicaiton resource.
+  ```yaml
+  apiVersion: argoproj.io/v1alpha1
+  kind: Application
+  metadata:
+    name: vault
+    namespace: argocd
+  spec:
+    destination:
+      namespace: argocd
+      server: https://kubernetes.default.svc 
+    project: default
+    source:
+      repoURL: 'https://helm.releases.hashicorp.com'
+      chart: vault
+      targetRevision: 0.15.0
+      helm:
+        releaseName: vault
+        values: |
+          injector:
+            enabled: false
+          server:
+            dev:
+              enabled: true
+            postStart:
+              - /bin/sh
+              - -c
+              - |
+                sleep 10s &&\
+                printf 'path "secret/*"{\ncapabilities=["read"]\n}' | vault policy write argocd - &&\
+                vault auth enable kubernetes &&\
+                vault write auth/kubernetes/config\
+                  kubernetes_host=https://kubernetes.default.svc \
+                  disable_iss_validation=true &&\
+                vault write auth/kubernetes/role/argocd \
+                  bound_service_account_names=argocd-repo-server \
+                  bound_service_account_namespaces=argocd \
+                  policies="argocd"
+    syncPolicy:
+      automated:
+        prune: true
+        selfHeal: true
+
+  ```
+  
+
+
+   Once the Vault has been deployed exec into vault pod and store the secret as following
+
+   ```
+   vault kv put secret/my-nginx password="secret-password"
+   vault kv get secret/my-nginx
+
+   ```
+- Deploy nginx applicaiton and secrets with following Argo CD applicaiton resource.
+   ```yaml
+    apiVersion: argoproj.io/v1alpha1
+    kind: Application
+    metadata:
+      name: my-nginx-vault-demo
+      namespace: argocd
+    spec:
+      destination:
+        namespace: default
+        server: https://kubernetes.default.svc 
+      project: default
+      source:
+        repoURL: https://github.com/ppratheesh/simple-microservices-app.git
+        targetRevision: HEAD
+        path: custom-app/Vault
+        plugin:
+          name: argocd-vault-plugin
+      syncPolicy:
+        automated:
+          prune: true
+          selfHeal: true
+        syncOptions:
+        - CreateNamespace=true
+
+  ```
+  
+</details>
 
 ## 11-ArgoCD Integration With External Secrets Operator
 Secrets are the intgral part of modern day applications, secrets are used to store the store the sensitive data such as passwords, keys, APIs, tokens, and certificates, storing secrets on any vcs repository is not a good prctice. We can use external secrets operator with ArgoCD to store secrets required by application on any external secret managers like AWS Secret Manager, Google Secret Manager, HC Vault etc and pull them into the application without writing them down in any kubernetes manifests.
