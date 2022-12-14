@@ -788,7 +788,7 @@ spec:
 ```
 </details>
 
-4.Do a curl test  `curl <node_ip>:30080` and check if you can see the secret
+Do a curl test  `curl <node_ip>:30080` and check if you can see the secret
 
 #### HC Vault
 
