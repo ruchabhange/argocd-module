@@ -32,7 +32,7 @@ jobs:
         run: |
           helm repo add loft-sh https://charts.loft.sh
           helm repo update
-          helm install vcluster loft-sh/vcluster-k8s -n $PR_NUMBER --create-namespace
+          helm install vcluster loft-sh/vcluster-k8s -n '"$PR_NUMBER"' --create-namespace
       - name: Delete Helm chart
         if: ${{github.event_name == 'pull_request' && github.event.action == 'closed'}}
         run: |
