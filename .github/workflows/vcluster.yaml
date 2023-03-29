@@ -1,0 +1,39 @@
+name: Create Cluster
+
+on:
+  pull_request:
+    types: [opened, closed]
+
+env:
+  PR_NUMBER: ${{ github.event.number }}
+jobs:
+  create-cluster:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install AWS CLI
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+
+      - name: Connect to EKS     
+        run: |
+          aws eks --region ap-south-1 update-kubeconfig --name Inception_eks_demo
+          kubectl get pods
+          echo "$PR_NUMBER"
+      - name: Install helm
+        run: |
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+          chmod 700 get_helm.sh
+          ./get_helm.sh
+      - name: Create VCluster
+        run: |
+          helm repo add loft-sh https://charts.loft.sh
+          helm repo update
+          helm install vcluster loft-sh/vcluster-k8s -n $PR_NUMBER --create-namespace
+      - name: Delete Helm chart
+        if: ${{github.event_name == 'pull_request' && github.event.action == 'closed'}}
+        run: |
+          helm uninstall vcluster -n vcluster 
