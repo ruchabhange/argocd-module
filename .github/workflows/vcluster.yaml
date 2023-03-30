@@ -2,7 +2,8 @@ name: Create Cluster
 
 on:
   pull_request:
-    types: [opened, closed]
+    types:
+      - labeled
 
 env:
   PR_NUMBER: ${{ github.event.number }}
