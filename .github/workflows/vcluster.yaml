@@ -9,6 +9,7 @@ env:
 jobs:
   create-cluster:
     runs-on: ubuntu-latest
+    if: ${{ github.event.label.name == 'argocd' }}
     steps:
       - name: Install AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
