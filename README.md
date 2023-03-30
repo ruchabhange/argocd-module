@@ -9,7 +9,7 @@ Total number of days: 1.5 days
     - [Gitops Principle](#gitops-principle)
     - [Gitops tools](#gitops-tools)
     - [Benefits](#benefits)
-    - [Drawback](#drawback)
+    - [Drawback](#drawback)zqwsws
 - [02-ArgoCD](#02-argocd)
     - [ArgoCD Architecture](#02-argocd)
     - [ArgoCD server Installation and CLI](#argocd-server-installation-and-cli) 
