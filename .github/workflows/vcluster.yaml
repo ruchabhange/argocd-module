@@ -38,4 +38,4 @@ jobs:
       - name: Delete Helm chart
         if: ${{github.event_name == 'pull_request' && github.event.action == 'closed'}}
         run: |
-          helm uninstall vcluster -n vcluster 
+          helm uninstall vcluster -n "argo$PR_NUMBER"
