@@ -11,7 +11,7 @@ Total number of days: 1.5 days
     - [Benefits](#benefits)
     - [Drawback](#drawback)
 - [02-ArgoCD](#02-argocd)
-    - [ArgoCD Architecture](#02-argocd)
+    - [ArgoCD Architecture](#02-argocd)xasxsc
     - [ArgoCD server Installation and CLI](#argocd-server-installation-and-cli) 
 - [03-Adding git repos through UI, CLI and declarative way in argocd](#03-adding-git-repos-through-ui-cli-and-declarative-way-in-argocd)
 - [04-Understanding Multi Cluster Setup ](#04-understanding-multi-cluster-setup)
