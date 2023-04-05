@@ -1,43 +1,56 @@
+##github actions file
 name: Create Cluster
 
 on:
   pull_request:
-    types:
-      - labeled
-      - closed
+    types: [closed ,opened]
 
 env:
   PR_NUMBER: ${{ github.event.number }}
 jobs:
   create-cluster:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'POC') }}
     runs-on: ubuntu-latest
     steps:
       - name: Install AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
+        #if: ${{ github.event.label.name == 'POC' }}
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
           aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
-
+     
       - name: Connect to EKS     
+        #if: ${{ github.event.label.name == 'POC' }}
         run: |
           aws eks --region ap-south-1 update-kubeconfig --name Inception_eks_demo
           kubectl get pods
           echo "$PR_NUMBER"
       - name: Install helm
+        if: ${{ github.event.action == 'opened' }}
         run: |
           curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
           chmod 700 get_helm.sh
           ./get_helm.sh
       - name: Create VCluster
-        if: ${{ github.event.label.name == 'argocd' }}
+        if: ${{ github.event.action == 'opened' }}
         run: |
-   
           helm repo add loft-sh https://charts.loft.sh
           helm repo update
           helm install vcluster loft-sh/vcluster-k8s -n "argo$PR_NUMBER" --create-namespace
-      - name: Delete Helm chart
-        if: ${{github.event_name == 'pull_request' && github.event.action == 'closed'  && github.event.label.name == 'argocd' }}
+      - name: Install argocd
+        if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }}
         run: |
-          helm uninstall vcluster -n "argo$PR_NUMBER"
+          kubectl wait --for condition=Available=True deploy -n "argo$PR_NUMBER" -l release=vcluster --timeout=60s
+          curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64" && sudo install -c -m 0755 vcluster /usr/local/bin && rm -f vcluster
+          vcluster --version
+          vcluster connect vcluster -n "argo$PR_NUMBER" -- kubectl create namespace argocd
+          vcluster connect vcluster -n "argo$PR_NUMBER" -- kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+          vcluster connect vcluster -n "argo$PR_NUMBER" -- kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+      - name: Delete Helm chart
+        if: ${{ github.event.action == 'closed' }}
+        #if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'POC') }}
+        run: |
+          helm uninstall vcluster -n "argo$PR_NUMBER"  
+          kubectl delete namespace "argo$PR_NUMBER"
