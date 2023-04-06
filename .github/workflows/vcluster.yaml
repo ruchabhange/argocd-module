@@ -19,7 +19,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
-          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          #aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
      
       - name: Connect to EKS     
         #if: ${{ github.event.label.name == 'POC' }}
@@ -39,6 +39,28 @@ jobs:
           helm repo add loft-sh https://charts.loft.sh
           helm repo update
           helm install vcluster loft-sh/vcluster-k8s -n "argo$PR_NUMBER" --create-namespace
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Read file contents
+        id: read_file
+        uses: andstor/file-reader-action@v1
+        with:
+          path: "version.txt"
+      #- name: Get version
+      #  id: vars
+      #  run: |
+      #    echo "version=$(cat version.txt)" >> $GITHUB_ENV
+      #    echo $version 
+      #    echo $GITHUB_OUTPUT
+      - name: File contents
+        run: |
+          export VERSION_OUTPUT=${{ steps.read_file.outputs.contents }}
+          echo $VERSION_OUTPUT
+          touch file
+          curl "https://raw.githubusercontent.com/argoproj/argo-cd/${VERSION_OUTPUT}/manifests/install.yaml" > file
+      #    echo ${{ steps.read_file.outputs.contents }}
       - name: Install argocd
         if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }}
         run: |
@@ -46,11 +68,13 @@ jobs:
           curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64" && sudo install -c -m 0755 vcluster /usr/local/bin && rm -f vcluster
           vcluster --version
           vcluster connect vcluster -n "argo$PR_NUMBER" -- kubectl create namespace argocd
-          vcluster connect vcluster -n "argo$PR_NUMBER" -- kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/v2.5.16/manifests/install.yaml
+          vcluster connect vcluster -n "argo$PR_NUMBER" -- kubectl apply -n argocd -f file
           vcluster connect vcluster -n "argo$PR_NUMBER" -- kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
+     #"https://raw.githubusercontent.com/argoproj/argo-cd/${{ steps.read_file.outputs.contents }}\n/manifests/install.yaml"
+
       - name: Delete Helm chart
         if: ${{ github.event.action == 'closed' }}
         #if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'POC') }}
         run: |
-          helm uninstall vcluster -n "argo$PR_NUMBER"  
+          helm uninstall vcluster -n "argo$PR_NUMBER" 
           kubectl delete namespace "argo$PR_NUMBER"
