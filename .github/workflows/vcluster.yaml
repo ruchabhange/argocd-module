@@ -19,7 +19,7 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
-          #aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
      
       - name: Connect to EKS     
         #if: ${{ github.event.label.name == 'POC' }}
@@ -71,7 +71,16 @@ jobs:
           vcluster connect vcluster -n "argo$PR_NUMBER" -- kubectl apply -n argocd -f file
           vcluster connect vcluster -n "argo$PR_NUMBER" -- kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
      #"https://raw.githubusercontent.com/argoproj/argo-cd/${{ steps.read_file.outputs.contents }}\n/manifests/install.yaml"
-
+      - name: Install linkerd
+        if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'linkerd') }}
+        run: |
+          kubectl wait --for condition=Available=True deploy -n "argo$PR_NUMBER" -l release=vcluster --timeout=60s
+          curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64" && sudo install -c -m 0755 vcluster /usr/local/bin && rm -f vcluster
+          vcluster --version
+          vcluster connect vcluster -n "argo$PR_NUMBER" -- curl -sL https://run.linkerd.io/install | sh
+          vcluster connect vcluster -n "argo$PR_NUMBER"  -- export PATH=$PATH:$HOME/.linkerd2/bin
+          vcluster connect vcluster -n "argo$PR_NUMBER"  -- linkerd version     
+          
       - name: Delete Helm chart
         if: ${{ github.event.action == 'closed' }}
         #if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'POC') }}
