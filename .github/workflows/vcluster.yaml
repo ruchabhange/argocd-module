@@ -80,9 +80,10 @@ jobs:
           curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64" && sudo install -c -m 0755 vcluster /usr/local/bin && rm -f vcluster
           vcluster --version
           vcluster connect vcluster -n "argo$PR_NUMBER" -- curl -sL https://run.linkerd.io/install | sh
-          vcluster connect vcluster -n "argo$PR_NUMBER"  -- export PATH=$PATH:$HOME/.linkerd2/bin
+          vcluster connect vcluster -n "argo$PR_NUMBER"  -- sudo mv  ~/.linkerd2/bin/linkerd /usr/local/bin/
           vcluster connect vcluster -n "argo$PR_NUMBER"  -- linkerd version     
-          
+          vcluster connect vcluster -n "argo$PR_NUMBER"  -- linkerd install --crds | kubectl apply -f -
+          vcluster connect vcluster -n "argo$PR_NUMBER"  -- linkerd install | kubectl apply -f -
       - name: Delete Helm chart
         if: ${{ github.event.action == 'closed' }}
         #if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'POC') }}
