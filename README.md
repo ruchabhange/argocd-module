@@ -1,6 +1,6 @@
 This module will walk you through the concepts of GitOps and Argocd(Gitops tools) with hands-on to gear up and start using Argocd deployment in your projects. bjknl
 
-Total number of days: 1.5 days
+Total number of days: 1.5 xwcrecedays
 
 # Level-01adafewfw
 
