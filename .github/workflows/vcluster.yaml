@@ -83,6 +83,7 @@ jobs:
           vcluster connect vcluster -n "argo$PR_NUMBER"  -- sudo mv  ~/.linkerd2/bin/linkerd /usr/local/bin/
           vcluster connect vcluster -n "argo$PR_NUMBER"  -- linkerd version     
           vcluster connect vcluster -n "argo$PR_NUMBER"  -- linkerd install --crds | kubectl apply -f -
+          sleep 20 
           vcluster connect vcluster -n "argo$PR_NUMBER"  -- linkerd install | kubectl apply -f -
       - name: Delete Helm chart
         if: ${{ github.event.action == 'closed' }}
