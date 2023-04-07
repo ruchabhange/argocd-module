@@ -24,7 +24,7 @@ jobs:
       - name: Connect to EKS     
         #if: ${{ github.event.label.name == 'POC' }}
         run: |
-          aws eks --region ap-south-1 update-kubeconfig --name Inception_eks_demo
+          aws eks --region ap-south-1 update-kubeconfig --name Infracloud-Enterprise-Cluster
           kubectl get pods
           echo "$PR_NUMBER"
       - name: Install helm
