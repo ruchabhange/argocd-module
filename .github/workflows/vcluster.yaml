@@ -74,7 +74,7 @@ jobs:
           vcluster connect vcluster -n "argo$PR_NUMBER" -- kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
      #"https://raw.githubusercontent.com/argoproj/argo-cd/${{ steps.read_file.outputs.contents }}\n/manifests/install.yaml"
       - name: Read file contents for linkerd
-        if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }}
+        if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'linkerd') }}
         id: read_file_linkerd
         uses: andstor/file-reader-action@v1
         with:
