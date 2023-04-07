@@ -79,12 +79,18 @@ jobs:
           kubectl wait --for condition=Available=True deploy -n "argo$PR_NUMBER" -l release=vcluster --timeout=60s
           curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64" && sudo install -c -m 0755 vcluster /usr/local/bin && rm -f vcluster
           vcluster --version
-          vcluster connect vcluster -n "argo$PR_NUMBER" -- curl -sL https://run.linkerd.io/install | sh
-          vcluster connect vcluster -n "argo$PR_NUMBER"  -- sudo mv  ~/.linkerd2/bin/linkerd /usr/local/bin/
-          vcluster connect vcluster -n "argo$PR_NUMBER"  -- linkerd version     
-          vcluster connect vcluster -n "argo$PR_NUMBER"  -- linkerd install --crds | kubectl apply -f -
-          sleep 20 
-          vcluster connect vcluster -n "argo$PR_NUMBER"  -- linkerd install | kubectl apply -f -
+          #vcluster connect vcluster -n "argo$PR_NUMBER" -- curl -sL https://run.linkerd.io/install | sh
+          #vcluster connect vcluster -n "argo$PR_NUMBER"  -- sudo mv  ~/.linkerd2/bin/linkerd /usr/local/bin/
+          #vcluster connect vcluster -n "argo$PR_NUMBER"  -- linkerd version     
+          #vcluster connect vcluster -n "argo$PR_NUMBER"  -- linkerd install --crds | kubectl apply -f -
+          #sleep 
+          #vcluster connect vcluster -n "argo$PR_NUMBER"  -- linkerd install | kubectl apply -f -
+          step certificate create root.linkerd.cluster.local ca.crt ca.key --profile root-ca --no-password --insecure
+          step certificate create identity.linkerd.cluster.local issuer.crt issuer.key --profile intermediate-ca --not-after 8760h --no-password --insecure --ca ca.crt --ca-key ca.key
+          vcluster connect vcluster -n  "argo$PR_NUMBER" -- helm repo add linkerd https://helm.linkerd.io/stable
+          vcluster connect vcluster -n  "argo$PR_NUMBER" -- helm install linkerd-crds linkerd/linkerd-crds -n linkerd --create-namespace
+          vcluster connect vcluster -n  "argo$PR_NUMBER" -- helm install linkerd-control-plane -n linkerd --set-file identityTrustAnchorsPEM=ca.crt --set-file identity.issuer.tls.crtPEM=issuer.crt --set-file identity.issuer.tls.keyPEM=issuer.key linkerd/linkerd-control-plane --version ${{ github.event.inputs.LINKERD_CHART_VERSION }}
+          vcluster connect vcluster -n  "argo$PR_NUMBER" -- helm install linkerd-viz linkerd/linkerd-viz -n linkerd-viz --create-namespace
       - name: Delete Helm chart
         if: ${{ github.event.action == 'closed' }}
         #if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'POC') }}
