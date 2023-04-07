@@ -7,7 +7,7 @@ Total number of days: 1.5 days
 # Table of Contents
 - [01-Introduction to GitOps](#01-introduction-to-gitops)
     - [Gitops Principle](#gitops-principle)
-    - [Gitops tools](#gitops-tools)
+    - [Gitops tools](#gitops-tools)xec
     - [Benefits](#benefits)
     - [Drawback](#drawback)
 - [02-ArgoCD](#02-argocd)
