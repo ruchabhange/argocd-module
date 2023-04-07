@@ -105,6 +105,7 @@ jobs:
           vcluster connect vcluster -n  "argo$PR_NUMBER" -- helm install linkerd-crds linkerd/linkerd-crds -n linkerd --create-namespace
           vcluster connect vcluster -n  "argo$PR_NUMBER" -- helm install linkerd-control-plane -n linkerd --set-file identityTrustAnchorsPEM=ca.crt --set-file identity.issuer.tls.crtPEM=issuer.crt --set-file identity.issuer.tls.keyPEM=issuer.key linkerd/linkerd-control-plane --version ${{ steps.read_file_linkerd.outputs.contents }}
           vcluster connect vcluster -n  "argo$PR_NUMBER" -- helm install linkerd-viz linkerd/linkerd-viz -n linkerd-viz --create-namespace
+          vcluster connect vcluster -n "argo$PR_NUMBER" -- linkerd version
       - name: Delete Helm chart
         if: ${{ github.event.action == 'closed' }}
         #if: ${{ github.event_name == 'pull_request' && github.event.action == 'closed' && contains(github.event.pull_request.labels.*.name, 'POC') }}
