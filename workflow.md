@@ -25,4 +25,6 @@ The workflow contains action to create a vcluster according to the `PR Number` o
 
 According to the workflow condition we have seprate files for argocd ie `version-argocd.txt` where we should specify the version we wand to work on for example `v2.5.16` while creating the PR with labels, same for linkerd we have `version-linkerd.txt`
 
-### 
+### Workflow Diagram
+
+![Gitlab parent-child pipeline (1)](https://user-images.githubusercontent.com/32972207/230891181-da0b38ff-5141-4c61-be9c-088be0001f88.png)
