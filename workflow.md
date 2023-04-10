@@ -1,4 +1,4 @@
-## Vcluster workflow for Argocd/Linkerd according to version based on tag 
+## Vcluster workflow for Argocd/Linkerd according to version based on Labels
 
 
 The workflow contains action to create a vcluster according to the `PR Number` on Eks cluster depending on label POC (Proof of Concept). If POC label is specified it would create vcluster and on top of it would perform specific actions if required as installing `argocd` or `linkerd` depending on label and version as input.
