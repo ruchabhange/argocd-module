@@ -6,7 +6,7 @@ Total number of days: 1.5 days
 
 # Table of Contents
 - [01-Introduction to GitOps](#01-introduction-to-gitops)
-    - [Gitops Principle](#gitops-principle)
+    - [Gitops Principle](#g knljitops-principle)
     - [Gitops tools](#gitops-tools)
     - [Benefits](#benefits)
     - [Drawback](#drawback)
