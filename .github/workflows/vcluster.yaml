@@ -11,6 +11,10 @@ jobs:
   create-cluster:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'POC') }}
     runs-on: ubuntu-latest
+    outputs:
+      argocd-version: ${{ steps.extract-parameters.outputs.argocd-version }}
+      linkerd-version: ${{ steps.extract-parameters.outputs.linkerd-version }}
+      
     steps:
       - name: Install AWS CLI
         uses: aws-actions/configure-aws-credentials@v1
@@ -18,20 +22,19 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ap-south-1
-          #aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
           
       - name: Connect to EKS             
         run: |
           aws eks --region ap-south-1 update-kubeconfig --name Infracloud-Enterprise-Cluster
           echo "$PR_NUMBER"
       
-      - name: Extract parameters
+      - name: Extract parameter for argocd and linkerd version
         id: extract-parameters
         run: |
           curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" ${{ github.api_url }}/repos/${{ github.repository }}/pulls/${{ github.event.number }} | jq -r '.body' > output
           cat output
-          #echo "argocdverion=$(cat output | grep EKS | awk '{print $3 }' | tr -d '[:space:]')" >> $GITHUB_OUTPUT
-          #echo "cluster_name=$(aws eks list-clusters --output text | grep POC-cluster | awk '{ print $2 }')" >> $GITHUB_OUTPUT
+          echo "argocd-version=$(cat output | grep argocd | awk '{print $4 }' | tr -d '[:space:]')" >> $GITHUB_OUTPUT
+          echo "linkerd-version=$(cat output | grep linkerd | awk '{print $4 }' | tr -d '[:space:]')" >> $GITHUB_OUTPUT
      
       - name: Install helm
         if: ${{ github.event.action == 'opened' }}
@@ -52,21 +55,23 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           
-      - name: Read file contents for argocd or linkerd version
-        if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }} || contains(github.event.pull_request.labels.*.name,*.name, 'linkerd')
-        id: read_file
-        uses: andstor/file-reader-action@v1
-        with:
-          path: "version.txt"
+      #- name: Read file contents for argocd or linkerd version
+      #  if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }} || contains(github.event.pull_request.labels.*.name,*.name, 'linkerd')
+      #  id: read_file
+      #  uses: andstor/file-reader-action@v1
+      #  with:
+      #    path: "version.txt"
           
       - name: File contents according to argocd version
         if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }}
+        env:
+          argocd-version: ${{ steps.extract-parameters.outputs.argocd-version }}
         run: |
-          export VERSION_OUTPUT=${{ steps.read_file.outputs.contents }}
-          echo $VERSION_OUTPUT
+          argocd-version: ${{ steps.extract-parameters-argocd.outputs.argocd-version }}
+          echo $argocd-version
           touch file
-          curl "https://raw.githubusercontent.com/argoproj/argo-cd/${VERSION_OUTPUT}/manifests/install.yaml" > file
-
+          curl "https://raw.githubusercontent.com/argoproj/argo-cd/${$argocd-version}/manifests/install.yaml" > file
+        
       - name: Install argocd 
         if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }}
         run: |
@@ -79,6 +84,8 @@ jobs:
              
       - name: Install linkerd
         if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'linkerd') }}
+        env:
+          linkerd-version: ${{ steps.extract-parameters.outputs.linkerd-version }}
         run: |
           kubectl wait --for condition=Available=True deploy -n "prnumber$PR_NUMBER" -l release=vcluster --timeout=60s
           curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64" && sudo install -c -m 0755 vcluster /usr/local/bin && rm -f vcluster
@@ -89,7 +96,7 @@ jobs:
           step certificate create identity.linkerd.cluster.local issuer.crt issuer.key --profile intermediate-ca --not-after 8760h --no-password --insecure --ca ca.crt --ca-key ca.key
           vcluster connect vcluster -n  "prnumber$PR_NUMBER" -- helm repo add linkerd https://helm.linkerd.io/stable
           vcluster connect vcluster -n  "prnumber$PR_NUMBER" -- helm install linkerd-crds linkerd/linkerd-crds -n linkerd --create-namespace
-          vcluster connect vcluster -n  "prnumber$PR_NUMBER" -- helm install linkerd-control-plane -n linkerd --set-file identityTrustAnchorsPEM=ca.crt --set-file identity.issuer.tls.crtPEM=issuer.crt --set-file identity.issuer.tls.keyPEM=issuer.key linkerd/linkerd-control-plane --version ${{ steps.read_file.outputs.contents }}
+          vcluster connect vcluster -n  "prnumber$PR_NUMBER" -- helm install linkerd-control-plane -n linkerd --set-file identityTrustAnchorsPEM=ca.crt --set-file identity.issuer.tls.crtPEM=issuer.crt --set-file identity.issuer.tls.keyPEM=issuer.key linkerd/linkerd-control-plane --version $linkerd-version
           vcluster connect vcluster -n  "prnumber$PR_NUMBER" -- helm install linkerd-viz linkerd/linkerd-viz -n linkerd-viz --create-namespace
           
       - name: Delete Helm chart
