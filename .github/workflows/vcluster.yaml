@@ -64,7 +64,7 @@ jobs:
       - env:
           argocd-version: ${{ steps.extract-parameters.outputs.argocd-version }}
           linkerd-version: ${{ steps.extract-parameters.outputs.linkerd-version }}
-            
+        run: echo "$argocd-version  $linkerd-version" 
       - name: File contents according to argocd version
         if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }}
         run: |
