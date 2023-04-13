@@ -1,12 +1,4 @@
-This module will walk you through the concepts of GitOps and Argocd(Gitops tools) with hands-on to gear up and start using Argocd deployment in your projects. bjknl
 
-Total number of days: 1.5 days
-
-# Level-01adafewfw
-
-# Table of Contents
-- [01-Introduction to GitOps](#01-introduction-to-gitops)
-    - [Gitops Principle](#gitops-principle)
     - [Gitops tools](#gitops-tools)
     - [Benefits](#benefits)
     - [Drawback](#drawback)
