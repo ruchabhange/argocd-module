@@ -7,6 +7,7 @@ on:
 
 env:
   PR_NUMBER: ${{ github.event.number }}
+  
 jobs:
   create-cluster:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'POC') }}
@@ -48,31 +49,8 @@ jobs:
         run: |
           helm repo add loft-sh https://charts.loft.sh
           helm repo update
-          helm install vcluster loft-sh/vcluster-k8s -n "prnumber$PR_NUMBER" --create-namespace
-          
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          
-      #- name: Read file contents for argocd or linkerd version
-      #  if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }} || contains(github.event.pull_request.labels.*.name,*.name, 'linkerd')
-      #  id: read_file
-      #  uses: andstor/file-reader-action@v1
-      #  with:
-      #    path: "version.txt"
-      #- env:
-      #    argocd-version: ${{ steps.extract-parameters.outputs.argocd-version }}
-      #    linkerd-version: ${{ steps.extract-parameters.outputs.linkerd-version }}
-      #  run: 
-      #  echo "extracting argocd and linkerd version" 
-          
-      - name: File contents according to argocd version
-        if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }}
-        run: |
-          touch file
-          curl "https://raw.githubusercontent.com/argoproj/argo-cd/${{ steps.extract-parameters.outputs.argocd-version }}/manifests/install.yaml" > file
-      
+          helm install vcluster loft-sh/vcluster-k8s -n "prnumber$PR_NUMBER" --create-namespace         
+     
       - name: Install argocd 
         if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }}
         run: |
