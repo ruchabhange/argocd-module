@@ -37,7 +37,7 @@ jobs:
           cat output
           echo "EKS=$(cat output | grep EKS | awk '{print $3 }' | tr -d '[:space:]')" >> $GITHUB_OUTPUT
           echo "argocd-version=$(cat output | grep argocd-version | awk '{print $3 }' | tr -d '[:space:]')" >> $GITHUB_OUTPUT
-          echo "linkerd-version"=$(cat output | grep argocd-version | awk '{print $3 }' | tr -d '[:space:]')" >> $GITHUB_OUTPUT
+          echo "linkerd-version=$(cat output | grep argocd-version | awk '{print $3 }' | tr -d '[:space:]')" >> $GITHUB_OUTPUT
      
       - name: Install helm
         if: ${{ github.event.action == 'opened' }}
