@@ -7,13 +7,14 @@ on:
 
 env:
   PR_NUMBER: ${{ github.event.number }}
+  
 jobs:
   create-cluster:
     if: ${{ contains(github.event.pull_request.labels.*.name, 'POC') }}
     runs-on: ubuntu-latest
     outputs:
-      argocd-version: ${{ steps.extract-parameters-argocd.outputs.test }}
-      linkerd-version: ${{ steps.extract-parameters-linkerd.outputs.test }}
+      argocd-version: ${{ steps.extract-parameters-argocd.outputs.argocd-version }}
+      linkerd-version: ${{ steps.extract-parameters-linkerd.outputs.linkerd-version }}
     steps:
       - name: Install AWS cli 
         uses: aws-actions/configure-aws-credentials@v1
@@ -48,8 +49,8 @@ jobs:
           cat output
           echo "linkerd-version=$(cat output | grep linkerd | awk '{print $4 }' | tr -d '[:space:]')" >> $GITHUB_OUTPUT
       - env:
-          OUTPUT1: ${{ steps.extract-parameters-argocd.outputs.argocd-version }}
-          OUTPUT2: ${{ steps.extract-parameters-linkerd.outputs.linkerd-version }}
+          argocd-version: ${{ steps.extract-parameters-argocd.outputs.argocd-version }}
+          linkerd-version: ${{ steps.extract-parameters-linkerd.outputs.linkerd-version }}
         run: echo "$argocd-version $linkerd-version"
      
       - name: Install helm
