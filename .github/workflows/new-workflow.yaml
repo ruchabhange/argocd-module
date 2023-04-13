@@ -46,10 +46,10 @@ jobs:
         run: |
           curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" ${{ github.api_url }}/repos/${{ github.repository }}/pulls/${{ github.event.number }} | jq -r '.body' > output
           cat output
-          echo "argocd-version=$(cat output | grep linkerd | awk '{print $3 }' | tr -d '[:space:]')" >> $GITHUB_OUTPUT
+          echo "linkerd-version=$(cat output | grep linkerd | awk '{print $3 }' | tr -d '[:space:]')" >> $GITHUB_OUTPUT
       - env:
-          OUTPUT1: ${{needs.job1.outputs.output1}}
-          OUTPUT2: ${{needs.job1.outputs.output2}}
+          OUTPUT1: ${{ steps.extract-parameters-argocd.outputs.argocd-version }}
+          OUTPUT2: ${{ steps.extract-parameters-linkerd.outputs.linkerd-version }}
         run: echo "$argocd-version $linkerd-version"
      
       - name: Install helm
