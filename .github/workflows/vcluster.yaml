@@ -80,7 +80,7 @@ jobs:
           curl -L -o vcluster "https://github.com/loft-sh/vcluster/releases/latest/download/vcluster-linux-amd64" && sudo install -c -m 0755 vcluster /usr/local/bin && rm -f vcluster
           vcluster --version
           vcluster connect vcluster -n "prnumber$PR_NUMBER" -- kubectl create namespace argocd
-          vcluster connect vcluster -n "prnumber$PR_NUMBER" -- kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/${{ argocd-version }}/manifests/install.yaml
+          vcluster connect vcluster -n "prnumber$PR_NUMBER" -- kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/$argocd-version/manifests/install.yaml
           vcluster connect vcluster -n "prnumber$PR_NUMBER" -- kubectl patch svc argocd-server -n argocd -p '{"spec": {"type": "LoadBalancer"}}'
              
       - name: Install linkerd
