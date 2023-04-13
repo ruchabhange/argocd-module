@@ -1,0 +1,61 @@
+##github actions file
+name: Create Cluster
+
+on:
+  pull_request:
+    types: [closed ,opened]
+
+env:
+  PR_NUMBER: ${{ github.event.number }}
+jobs:
+  create-cluster:
+    if: ${{ contains(github.event.pull_request.labels.*.name, 'POC') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install AWS cli 
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ap-south-1
+          #aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          
+      - name: Connect to EKS             
+        run: |
+          aws eks --region ap-south-1 update-kubeconfig --name Infracloud-Enterprise-Cluster
+          echo "$PR_NUMBER"
+      
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      
+      - name: Extract parameters
+        id: extract-parameters
+        run: |
+          curl -L -H "Accept: application/vnd.github+json" -H "Authorization: Bearer ${{ secrets.TOKEN }}" -H "X-GitHub-Api-Version: 2022-11-28" ${{ github.api_url }}/repos/${{ github.repository }}/pulls/${{ github.event.number }} | jq -r '.body' > output
+          cat output
+          echo "EKS=$(cat output | grep EKS | awk '{print $3 }' | tr -d '[:space:]')" >> $GITHUB_OUTPUT
+          echo "argocd-version=(cat output | grep argocd-version | awk '{print $3 }' | tr -d '[:space:]')" >> $GITHUB_OUTPUT
+          echo "linkerd-version"= (cat output | grep argocd-version | awk '{print $3 }' | tr -d '[:space:]')" >> $GITHUB_OUTPUT
+     
+      - name: Install helm
+        if: ${{ github.event.action == 'opened' }}
+        run: |
+          curl -fsSL -o get_helm.sh https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+          chmod 700 get_helm.sh
+          ./get_helm.sh
+       
+      - name: Create VCluster
+        if: ${{ github.event.action == 'opened' }}
+        run: |
+          helm repo add loft-sh https://charts.loft.sh
+          helm repo update
+          helm install vcluster loft-sh/vcluster-k8s -n "prnumber$PR_NUMBER" --create-namespace
+          
+      - name: Delete Helm chart
+        if: ${{ github.event.action == 'closed' }}
+        run: |
+          helm uninstall vcluster -n "prnumber$PR_NUMBER" 
+          kubectl delete namespace "prnumber$PR_NUMBER"
+  
