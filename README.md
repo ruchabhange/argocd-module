@@ -6,16 +6,7 @@ Total number of days: 1.5 days
 
 # Table of Contents
 - [01-Introduction to GitOps](#01-introduction-to-gitops)
-    - [Gitops Principle](#gitops-principle)
-    - [Gitops tools](#gitops-tools)
-    - [Benefits](#benefits)
-    - [Drawback](#drawback)
-- [02-ArgoCD](#02-argocd)
-    - [ArgoCD Architecture](#02-argocd)
-    - [ArgoCD server Installation and CLI](#argocd-server-installation-and-cli) 
-- [03-Adding git repos through UI, CLI and declarative way in argocd](#03-adding-git-repos-through-ui-cli-and-declarative-way-in-argocd)
-- [04-Understanding Multi Cluster Setup ](#04-understanding-multi-cluster-setup)
-- [05-Understanding HA Cluster Setup](#05-understanding-ha-cluster-setup)
+  
 - [06-ArgoCD with Helm](#06-argocd-with-helm30-minutes)
 - [07-ArgoCD with Kustomize](#07-argocd-with-kustomize-60-minutes)
 - [08-Understanding App of Apps](#08-understanding-app-of-apps-20-minutes)
