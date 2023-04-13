@@ -61,17 +61,17 @@ jobs:
       #  uses: andstor/file-reader-action@v1
       #  with:
       #    path: "version.txt"
-      - env:
-          argocd-version: ${{ steps.extract-parameters.outputs.argocd-version }}
-          linkerd-version: ${{ steps.extract-parameters.outputs.linkerd-version }}
-        run: 
-          echo "extracting argocd and linkerd version" 
+      #- env:
+      #    argocd-version: ${{ steps.extract-parameters.outputs.argocd-version }}
+      #    linkerd-version: ${{ steps.extract-parameters.outputs.linkerd-version }}
+      #  run: 
+      #  echo "extracting argocd and linkerd version" 
           
       - name: File contents according to argocd version
         if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }}
         run: |
           touch file
-          curl "https://raw.githubusercontent.com/argoproj/argo-cd/${argocd-version}/manifests/install.yaml" > file
+          curl "https://raw.githubusercontent.com/argoproj/argo-cd/${{ steps.extract-parameters.outputs.argocd-version }}/manifests/install.yaml" > file
       
       - name: Install argocd 
         if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }}
