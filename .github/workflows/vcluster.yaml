@@ -68,8 +68,6 @@ jobs:
       - name: File contents according to argocd version
         if: ${{ github.event.action == 'opened' && contains(github.event.pull_request.labels.*.name, 'argocd') }}
         run: |
-          argocd-version: ${{ steps.extract-parameters-argocd.outputs.argocd-version }}
-          echo $argocd-version
           touch file
           curl "https://raw.githubusercontent.com/argoproj/argo-cd/${argocd-version}/manifests/install.yaml" > file
       
